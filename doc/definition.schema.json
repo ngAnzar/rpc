@@ -1,0 +1,225 @@
+{
+    "$id": "@anzar/rpc/definition",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "entities": {
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "^[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*$": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "patternProperties": {
+                        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                                "type"
+                            ],
+                            "properties": {
+                                "type": {
+                                    "$ref": "#/definitions/Type"
+                                },
+                                "summary": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "methods": {
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "^[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*$": {
+                    "type": "object",
+                    "properties": {
+                        "params": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "$ref": "#/definitions/Type"
+                                    },
+                                    "summary": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name"
+                                ]
+                            }
+                        },
+                        "returns": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "$ref": "#/definitions/Type"
+                                },
+                                "summary": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "throws": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                    "code": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "number"
+                                            }
+                                        ]
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    },
+                                    "data": {
+                                        "type": "object",
+                                        "$ref": "#/definitions/Type"
+                                    },
+                                    "summary": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "summary": {
+                            "type": "string"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Type": {
+            "oneOf": [
+                {
+                    "enum": [
+                        "boolean",
+                        "integer",
+                        "null",
+                        "number",
+                        "string",
+                        "date",
+                        "datetime"
+                    ]
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Type"
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "$ref": {
+                            "type": "string"
+                        },
+                        "mapOf": {
+                            "$ref": "#/definitions/Type"
+                        },
+                        "listOf": {
+                            "$ref": "#/definitions/Type"
+                        },
+                        "polymorphic": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                                "identity",
+                                "mapping"
+                            ],
+                            "properties": {
+                                "identity": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "mapping": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "id",
+                                            "$ref"
+                                        ],
+                                        "properties": {
+                                            "id": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": [
+                                                            "string",
+                                                            "integer"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": [
+                                                                "string",
+                                                                "integer"
+                                                            ]
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "$ref": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1
+                }
+            ]
+        }
+    },
+    "required": [
+        "entities",
+        "methods"
+    ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@anzar/rpc",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:ngAnzar/rpc.git",
+  "author": {
+    "email": "vetesi.zoltan@gmail.com",
+    "name": "Vetési Zoltán"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@anzar/core": "^1.0.0"
+  }
+}
