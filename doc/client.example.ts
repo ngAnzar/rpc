@@ -20,8 +20,7 @@ class User extends RpcEntity {
 }
 
 
-
-export const TOKEN_USER = {
+export const USER_PROVIDE = {
     provide: User,
     deps: [RpcClient],
     useFactory: User.factory

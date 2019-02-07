@@ -1,0 +1,14 @@
+{
+    "$schema": "../src/schema/definition.schema.json",
+    "module": "some-package-name/api/valami",
+    "entities": {
+        "File": {
+            "name": {
+                "type": "string"
+            },
+            "size": {
+                "type": "number"
+            }
+        }
+    }
+}

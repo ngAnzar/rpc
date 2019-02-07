@@ -3,6 +3,9 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
+        "module": {
+            "type": "string"
+        },
         "entities": {
             "type": "object",
             "additionalProperties": false,
@@ -39,6 +42,10 @@
             "patternProperties": {
                 "^[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*$": {
                     "type": "object",
+                    "required": [
+                        "params",
+                        "returns"
+                    ],
                     "properties": {
                         "params": {
                             "type": "array",
@@ -97,8 +104,7 @@
                                         "type": "string"
                                     },
                                     "data": {
-                                        "type": "object",
-                                        "$ref": "#/definitions/Type"
+                                        "type": "object"
                                     },
                                     "summary": {
                                         "type": "string"
@@ -127,8 +133,8 @@
                     "enum": [
                         "boolean",
                         "integer",
-                        "null",
                         "number",
+                        "null",
                         "string",
                         "date",
                         "datetime"
@@ -219,7 +225,6 @@
         }
     },
     "required": [
-        "entities",
-        "methods"
+        "module"
     ]
 }

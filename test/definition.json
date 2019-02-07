@@ -1,0 +1,82 @@
+{
+    "$schema": "../src/schema/definition.schema.json",
+    "module": "some-package-name/api/valami",
+    "entities": {
+        "Address": {},
+        "Event": {},
+        "User": {
+            "firstName": {
+                "type": "string"
+            },
+            "address": {
+                "type": {
+                    "$ref": "#/entities/Address"
+                }
+            },
+            "valami": {
+                "type": {
+                    "mapOf": {
+                        "$ref": "#/entities/Address"
+                    }
+                }
+            },
+            "tuple": {
+                "type": [
+                    "number",
+                    {
+                        "$ref": "#/entities/Address"
+                    }
+                ]
+            },
+            "picture": {
+                "type": {
+                    "$ref": "./file.json#/entities/File"
+                }
+            },
+            "nodes": {
+                "type": {
+                    "polymorphic": {
+                        "identity": "type",
+                        "mapping": [
+                            {
+                                "id": "event",
+                                "$ref": "#/entities/Event"
+                            },
+                            {
+                                "id": "address",
+                                "$ref": "#/entities/Address"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "methods": {
+        "User.list": {
+            "params": [
+                {
+                    "name": "filter",
+                    "summary": "Short description...",
+                    "description": "Long description...",
+                    "type": {
+                        "$ref": "#/entities/User"
+                    }
+                }
+            ],
+            "returns": {
+                "summary": "nothing",
+                "type": "null"
+            },
+            "throws": [
+                {
+                    "code": 400,
+                    "message": "string",
+                    "data": {
+                        "$ref": ""
+                    }
+                }
+            ]
+        }
+    }
+}
