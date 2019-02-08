@@ -69,7 +69,7 @@ export class Type_Ref extends Type {
 
     protected _createUid(): string {
         if (this.referenced instanceof Entity) {
-            return this.referenced.name.uid
+            return Entity.qname(this.referenced).uid
         } else {
             return this.referenced.uid
         }
@@ -197,16 +197,33 @@ export class QName {
     }
 
     public get document() {
-        return registry.get(this.path)
+        return registry.get(this.file)
     }
 }
 
 
-export class Entity {
-    public constructor(
-        public name: QName,
-        public fields: EntityFields) {
+const ENT_NAME = Symbol("Entity.name")
+const ENT_FIELDS = Symbol("Entity.fields")
 
+export class Entity {
+    public static qname(ent: Entity): QName {
+        return ent[ENT_NAME]
+    }
+
+    public static fields(ent: Entity): EntityFields {
+        return ent[ENT_FIELDS]
+    }
+
+    protected [ENT_NAME]: QName
+    protected [ENT_FIELDS]: EntityFields
+
+    public constructor(name: QName, fields: EntityFields) {
+        this[ENT_NAME] = name
+        this[ENT_FIELDS] = fields
+
+        for (const k in fields) {
+            this[k] = fields[k]
+        }
     }
 }
 
@@ -280,12 +297,13 @@ export class Document {
     public readonly entities: Entities = {}
     public readonly methods: Methods = {}
     public readonly path: string
+    public outPath: string
 
     public constructor(private readonly reg: Registry, json: any, _path: string) {
         this.path = _path
         let basename = path.basename(_path).split(".")
         basename.pop()
-        this.module = new Module(json.module, json.module.replace(/[\\\/]+$/, "") + "/" + basename.join("."))
+        this.module = new Module(json.module, basename.join("."))
 
         if (json.entities) {
             this._convertEntities(json.entities)
@@ -367,8 +385,9 @@ export class Document {
     protected _resolveType() {
         for (const k in this.entities) {
             const ent = this.entities[k]
-            for (const f in ent.fields) {
-                const field = ent.fields[f]
+            const fields = Entity.fields(ent)
+            for (const f in fields) {
+                const field = fields[f]
                 if (field.type) {
                     field.type.resolve()
                 }

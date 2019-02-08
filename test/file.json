@@ -1,6 +1,6 @@
 {
     "$schema": "../src/schema/definition.schema.json",
-    "module": "some-package-name/api/valami",
+    "module": "some-package-name/api",
     "entities": {
         "File": {
             "name": {

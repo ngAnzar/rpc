@@ -2,8 +2,22 @@
     "$schema": "../src/schema/definition.schema.json",
     "module": "some-package-name/api/valami",
     "entities": {
-        "Address": {},
-        "Event": {},
+        "Address": {
+            "type": {
+                "type": "string"
+            },
+            "addrField": {
+                "type": "string"
+            }
+        },
+        "Event": {
+            "type": {
+                "type": "string"
+            },
+            "eventField": {
+                "type": "string"
+            }
+        },
         "User": {
             "firstName": {
                 "type": "string"
@@ -33,7 +47,7 @@
                     "$ref": "./file.json#/entities/File"
                 }
             },
-            "nodes": {
+            "node": {
                 "type": {
                     "polymorphic": {
                         "identity": "type",
@@ -49,6 +63,24 @@
                         ]
                     }
                 }
+            },
+            "nodeList": {
+                "type": {
+                    "listOf": {
+                        "$ref": "#/entities/User/node/type"
+                    }
+                }
+            },
+            "created_date": {
+                "type": "date"
+            },
+            "created_time": {
+                "type": "datetime"
+            }
+        },
+        "File": {
+            "szopatas": {
+                "type": "boolean"
             }
         }
     },

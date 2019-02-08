@@ -5,9 +5,12 @@ import { compile } from "../src/compiler"
 
 describe("Compiler", () => {
     it("Compile", () => {
-        compile([path.join(__dirname, "definition.json")], {
-            outPath: path.join(__dirname, ".compiled")
-        })
+        compile(
+            [
+                path.join(__dirname, "definition.json"),
+                path.join(__dirname, "file.json"),
+            ],
+            { outPath: path.join(__dirname, ".compiled") })
 
         // let doc = registry.get(path.join(__dirname, "definition.json"))
 

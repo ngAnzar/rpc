@@ -13,7 +13,14 @@
         ],
         "outDir": "./lib",
         "sourceMap": true,
-        "declaration": true
+        "declaration": true,
+        "experimentalDecorators": true,
+        "baseUrl": ".",
+        "paths": {
+            "@anzar/core/*": [
+                "../core/src/*"
+            ]
+        }
     },
     "include": [
         "src/**/*.ts"

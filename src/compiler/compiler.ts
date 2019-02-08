@@ -12,16 +12,17 @@ import { createEntityCode } from "./entity"
 
 export class Compiler {
     protected imports: { [key: string]: { qname: QName, alias: string } } = {}
+    protected _factories: string[] = []
 
     public constructor(public readonly doc: Document) {
 
     }
 
-    public emit(filePath: string) {
+    public emit(filePath: string, factoryPath: string) {
         fs.mkdirpSync(path.dirname(filePath))
 
         let entities: string = this.renderEntities()
-        let content = this.renderImports()
+        let content = this.renderImports(filePath, factoryPath)
             + "\n\n"
             + entities
             + "\n"
@@ -43,10 +44,8 @@ export class Compiler {
         } else if (type instanceof Type_Ref) {
             if (type.referenced instanceof Entity) {
                 const ent = type.referenced
-                this.imports[ent.name.uid] = {
-                    qname: ent.name,
-                    alias: this._getUniqueImportName(ent.name)
-                }
+                const qname = Entity.qname(ent)
+                this._getQNameLocalName(qname)
             } else {
                 this.importType(type.referenced)
             }
@@ -54,9 +53,10 @@ export class Compiler {
             for (const t of type.items) {
                 this.importType(t)
             }
+        } else {
+            console.log("Unhandled type>>>", type)
+            throw new Error("Unhandled type")
         }
-
-        throw new Error("Unhandled type")
     }
 
     protected _getUniqueImportName(qname: QName): string {
@@ -66,9 +66,10 @@ export class Compiler {
         let ok = true
 
         do {
+            ok = true
             for (const k in this.doc.entities) {
                 const ent = this.doc.entities[k]
-                if (ent.name.fullName === alias) {
+                if (Entity.qname(ent).fullName === alias) {
                     ok = false
                     break
                 }
@@ -129,18 +130,41 @@ export class Compiler {
         } else if (type instanceof Type_Tuple) {
             return `[${type.items.map(v => this.typeAsTs(v)).join(", ")}]`
         } else if (type instanceof Type_Polymorphic) {
-            return type.mapping.map(v => this.typeAsTs(v.type)).join(" | ")
+            return type.mapping.map(v => {
+                let id = {}
+                v.id.fields.forEach((field, i) => {
+                    id[field] = v.id.values[i]
+                })
+                return `(${this.typeAsTs(v.type)} & ${JSON.stringify(id)})`
+            }).join(" | ")
         }
 
         throw new Error("Ungandled type")
     }
 
     public typeAsFactory(type: Type): string {
-        return TypeFactory.get(this, type)
+        const name = TypeFactory.get(this, type)
+        if (name.startsWith(TypeFactory.name) && this._factories.indexOf(name) === -1) {
+            this._factories.push(name)
+        }
+        return name
     }
 
     public getEntityName(ent: Entity): string {
-        return ent.name.name
+        return this._getQNameLocalName(Entity.qname(ent))
+    }
+
+    protected _getQNameLocalName(qname: QName): string {
+        let exists = Object.values(this.doc.entities)
+            .filter(v => Entity.qname(v).uid === qname.uid)
+
+        if (exists.length === 0) {
+            const alias = this._getUniqueImportName(qname)
+            this.imports[qname.uid] = { qname, alias }
+            return alias
+        } else {
+            return qname.name
+        }
     }
 
     protected _tempVarIdx = 0
@@ -151,10 +175,10 @@ export class Compiler {
     protected renderEntities(): string {
         return Object.values(this.doc.entities).map(ent => {
             return createEntityCode(this, ent)
-        }).join("\n\n")
+        }).join("\n\n\n")
     }
 
-    protected renderImports(): string {
+    protected renderImports(selfPath: string, factoryPath: string): string {
         let selfModuleParts = this.doc.module.parent.split("/")
         function determineFrom(other: QName) {
             let otherModuleParts = other.document.module.parent.split("/")
@@ -168,7 +192,12 @@ export class Compiler {
                 }
             }
 
-            return "./" + otherModuleParts.slice(i).join("/") + other.document.module.name
+            let relDepth = Math.max(0, selfModuleParts.length - otherModuleParts.length)
+            let rel = relDepth
+                ? "../".repeat(selfModuleParts.length - otherModuleParts.length)
+                : "./"
+
+            return rel + otherModuleParts.slice(i).join("/") + other.document.module.name
         }
 
         let groupByModule: { [key: string]: Array<{ fname: string[], alias: string }> } = {}
@@ -181,15 +210,22 @@ export class Compiler {
             groupByModule[importFrom].push({ fname: imp.qname.fullName.split("."), alias: imp.alias })
         }
 
-        let res: string[] = []
+        let res: string[] = [
+            `import { Entity, Field } from "@anzar/rpc"`
+        ]
+
         for (const impFrom in groupByModule) {
             let imps: string[] = []
             let convs: string[] = []
 
             for (const imp of groupByModule[impFrom]) {
                 if (imp.fname.length > 1 || imp.fname[0] !== imp.alias) {
-                    imps.push(imp.fname[0])
-                    convs.push(`const ${imp.alias} = ${imp.fname.join(".")}`)
+                    if (imp.fname.length === 1) {
+                        imps.push(`${imp.fname[0]} as ${imp.alias}`)
+                    } else {
+                        imps.push(imp.fname[0])
+                        convs.push(`const ${imp.alias} = ${imp.fname.join(".")}`)
+                    }
                 } else {
                     imps.push(imp.alias)
                 }
@@ -199,6 +235,13 @@ export class Compiler {
             if (convs.length) {
                 res = res.concat(convs)
             }
+        }
+
+        if (this._factories.length > 0) {
+            let fac = path.relative(path.dirname(selfPath), factoryPath)
+                .replace(/\.[tj]s$/, "")
+                .replace(/[\\\/]+/g, "/")
+            res.push(`import { ${this._factories.join(", ")} } from "${fac}"`)
         }
 
         return res.join("\n")

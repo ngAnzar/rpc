@@ -13,9 +13,10 @@ import { Compiler } from "./compiler"
 
 
 export function createEntityCode(comp: Compiler, ent: Entity): string {
-    let res = `class ${ent.name.name} extends Entity {\n`
-    for (const f in ent.fields) {
-        res += createFieldCode(comp, ent.fields[f]) + "\n"
+    let res = `export class ${Entity.qname(ent).name} extends Entity {\n`
+    const fields = Entity.fields(ent)
+    for (const f in fields) {
+        res += createFieldCode(comp, fields[f]) + "\n"
     }
     res += `}`
     return res
@@ -24,27 +25,77 @@ export function createEntityCode(comp: Compiler, ent: Entity): string {
 
 function createFieldCode(comp: Compiler, field: EntityField, type?: Type): string {
     type = type || field.type
+
+    if (type instanceof Type_Ref) {
+        if (type.referenced instanceof Type) {
+            return createFieldCode(comp, field, type.referenced)
+        }
+    }
+
     let tsType = comp.typeAsTs(type)
     // let tsFactory = comp.typeAsFactory(type)
-    let res
+    let res = "    "
+    let ents = getEntitiesFromType(type).map(v => comp.getEntityName(v))
+    let tArray = ents.length ? `[${ents.join(", ")}]` : null
+    let map = comp.typeAsFactory(type)
 
+    res += `@Field({`
+    if (tArray && map) {
+        res += ` map: ${map}, type: ${tArray} `
+    } else if (tArray) {
+        res += ` type: ${tArray} `
+    } else if (map) {
+        res += ` map: ${map} `
+    }
+    return res + `}) public ${field.name}: ${tsType}`
+
+    /*
     if (type instanceof Type_List) {
-        res = `@Field({ listOf: ${comp.typeAsFactory(type.itemType)} }) public ${field.name}: ${tsType}`
+        res = `@Field({ map: ${ comp.typeAsFactory(type) }, type: [${ ents.join(", ") }] }) public ${ field.name }: ${ tsType } `
     } else if (type instanceof Type_Mapping) {
-        res = `@Field({ mapOf: ${comp.typeAsFactory(type.itemType)} }) public ${field.name}: ${tsType}`
+        res = `@Field({ map: ${ comp.typeAsFactory(type) }, type: [${ ents.join(", ") }] }) public ${ field.name }: ${ tsType } `
     } else if (type instanceof Type_Native) {
-        res = `@Field() public ${field.name}: ${tsType}`
+        res = `@Field({ map: ${ comp.typeAsFactory(type) }}) public ${ field.name }: ${ tsType } `
     } else if (type instanceof Type_Polymorphic) {
-        res = `@Field({ map: ${comp.typeAsFactory(type)} }) public ${field.name}: ${tsType}`
+        res = `@Field({ map: ${ comp.typeAsFactory(type) }, type: [${ ents.join(", ") }] }) public ${ field.name }: ${ tsType } `
     } else if (type instanceof Type_Ref) {
         if (type.referenced instanceof Entity) {
-            res = `@Field() public ${field.name}: ${tsType}`
+            res = `@Field({ map: ${ comp.typeAsFactory(type) }, type: [${ ents.join(", ") }] }) public ${ field.name }: ${ tsType } `
         } else {
             return createFieldCode(comp, field, type.referenced)
         }
     } else if (type instanceof Type_Tuple) {
-        res = `@Field({ map: ${comp.typeAsFactory(type)} }) public ${field.name}: ${tsType}`
+        res = `@Field({ map: ${ comp.typeAsFactory(type) }, type: [${ ents.join(", ") }] }) public ${ field.name }: ${ tsType } `
+    }
+    */
+
+    return `    ${res} `
+}
+
+
+function getEntitiesFromType(type: Type, ents: Entity[] = []): Entity[] {
+    if (type instanceof Type_List) {
+        return getEntitiesFromType(type.itemType, ents)
+    } else if (type instanceof Type_Mapping) {
+        return getEntitiesFromType(type.itemType, ents)
+    } else if (type instanceof Type_Native) {
+        return ents
+    } else if (type instanceof Type_Polymorphic) {
+        for (const map of type.mapping) {
+            getEntitiesFromType(map.type, ents)
+        }
+        return ents
+    } else if (type instanceof Type_Ref) {
+        if (type.referenced instanceof Entity) {
+            ents.push(type.referenced)
+        } else {
+            return getEntitiesFromType(type.referenced, ents)
+        }
+    } else if (type instanceof Type_Tuple) {
+        for (const item of type.items) {
+            getEntitiesFromType(item, ents)
+        }
     }
 
-    return `    ${res}`
+    return ents
 }
