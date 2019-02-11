@@ -9,7 +9,8 @@
             "es2016",
             "es2017",
             "es6",
-            "es7"
+            "es7",
+            "dom"
         ],
         "outDir": "./lib",
         "sourceMap": true,
@@ -23,6 +24,7 @@
         }
     },
     "include": [
-        "src/**/*.ts"
+        "src/compiler/**/*.ts",
+        "src/cli.ts"
     ]
 }

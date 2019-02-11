@@ -1,0 +1,24 @@
+{
+    "$schema": "../src/schema/rpc.schema.json",
+    "id": 1,
+    "method": "User.save",
+    "params": [
+        {
+            "id": 3,
+            "name": "John Doe"
+        }
+    ],
+    "meta": {
+        "loadFields": {
+            "User": "*",
+            "Almafa": [
+                "id",
+                {
+                    "address": [
+                        "formatted"
+                    ]
+                }
+            ]
+        }
+    }
+}

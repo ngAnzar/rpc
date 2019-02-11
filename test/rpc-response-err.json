@@ -1,0 +1,14 @@
+{
+    "$schema": "../src/schema/rpc.schema.json",
+    "id": 1,
+    "error": {
+        "code": 12345,
+        "message": "Form contains error",
+        "data": {
+            "formField": {
+                "type": "required",
+                "message": "Please fill the field"
+            }
+        }
+    }
+}

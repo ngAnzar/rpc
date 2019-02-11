@@ -8,23 +8,35 @@ import {
 
 import { TypeFactory } from "./type-factory"
 import { createEntityCode } from "./entity"
+import { createMethods } from "./methods"
 
 
 export class Compiler {
     protected imports: { [key: string]: { qname: QName, alias: string } } = {}
     protected _factories: string[] = []
+    protected _deps: string[] = []
 
     public constructor(public readonly doc: Document) {
 
     }
 
+    public get deps() { return this._deps }
+
     public emit(filePath: string, factoryPath: string) {
         fs.mkdirpSync(path.dirname(filePath))
 
         let entities: string = this.renderEntities()
+        let methods: string = this.renderMethods()
         let content = this.renderImports(filePath, factoryPath)
             + "\n\n"
-            + entities
+            + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
+            + `/*                       ENTITIES                        */\n`
+            + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
+            + entities + "\n\n"
+            + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
+            + `/*                        METHODS                        */\n`
+            + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
+            + methods
             + "\n"
 
         fs.writeFileSync(filePath, content)
@@ -178,6 +190,10 @@ export class Compiler {
         }).join("\n\n\n")
     }
 
+    protected renderMethods(): string {
+        return createMethods(this)
+    }
+
     protected renderImports(selfPath: string, factoryPath: string): string {
         let selfModuleParts = this.doc.module.parent.split("/")
         function determineFrom(other: QName) {
@@ -207,11 +223,18 @@ export class Compiler {
             if (!groupByModule[importFrom]) {
                 groupByModule[importFrom] = []
             }
+
+            let idx = this._deps.indexOf(imp.qname.file)
+            if (idx === -1) {
+                this._deps.push(imp.qname.file)
+            }
+
             groupByModule[importFrom].push({ fname: imp.qname.fullName.split("."), alias: imp.alias })
         }
 
         let res: string[] = [
-            `import { Entity, Field } from "@anzar/rpc"`
+            `import { Observable } from "rxjs"`,
+            `import { Entity, Field, Method, RPC_CLIENT } from "@anzar/rpc"`
         ]
 
         for (const impFrom in groupByModule) {

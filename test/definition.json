@@ -82,6 +82,15 @@
             "szopatas": {
                 "type": "boolean"
             }
+        },
+        "UserListRes": {
+            "items": {
+                "type": {
+                    "listOf": {
+                        "$ref": "#/entities/User"
+                    }
+                }
+            }
         }
     },
     "methods": {
@@ -98,7 +107,9 @@
             ],
             "returns": {
                 "summary": "nothing",
-                "type": "null"
+                "type": {
+                    "$ref": "#/entities/UserListRes"
+                }
             },
             "throws": [
                 {

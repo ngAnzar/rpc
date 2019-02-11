@@ -8,7 +8,7 @@ describe("Compiler", () => {
         compile(
             [
                 path.join(__dirname, "definition.json"),
-                path.join(__dirname, "file.json"),
+                // path.join(__dirname, "file.json"),
             ],
             { outPath: path.join(__dirname, ".compiled") })
 

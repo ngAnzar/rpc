@@ -3,7 +3,7 @@ import * as fs from "fs-extra"
 import * as ajv from "ajv"
 
 
-export const schema = require("./definition.schema.json")
+export const schema = require("../../definition.schema.json")
 const ajvInstance = ajv({
     allErrors: true,
     jsonPointers: true

@@ -26,13 +26,22 @@ export class CompileSession {
 export function compile(files: string[], options: CompileOptions) {
     const session = new CompileSession(options)
     const factoryPath = path.join(session.helperPath, TypeFactory.name) + ".ts"
+    const emitted: { [key: string]: any } = {}
+
+    while (files.length) {
+        const file = files.shift() as string
 
 
-    for (const file of files) {
-        const doc = registry.get(file)
-        const comp = new Compiler(doc)
-        doc.outPath = doc.outPath || (path.join(session.outPath, doc.module.parent, doc.module.name) + ".ts")
-        comp.emit(doc.outPath, factoryPath)
+        if (!emitted[file]) {
+            emitted[file] = true
+
+            const doc = registry.get(file)
+            const comp = new Compiler(doc)
+            doc.outPath = doc.outPath || (path.join(session.outPath, doc.module.parent, doc.module.name) + ".ts")
+            comp.emit(doc.outPath, factoryPath)
+
+            files = files.concat(comp.deps)
+        }
     }
 
     TypeFactory.emit(factoryPath)

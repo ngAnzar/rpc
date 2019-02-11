@@ -183,9 +183,9 @@ export class QName {
 
     public constructor(public readonly file: string, public readonly path: string, name: string) {
         let parts = name.split(".")
+        this.tln = parts[0]
         this.name = parts.pop() as string
         this.ns = parts.join(".")
-        this.tln = parts[0]
     }
 
     public get fullName() {

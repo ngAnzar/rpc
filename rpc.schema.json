@@ -1,0 +1,132 @@
+{
+    "$id": "@anzar/rpc",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "oneOf": [
+        {
+            "$ref": "#/definitions/Request"
+        },
+        {
+            "$ref": "#/definitions/Response_Success"
+        },
+        {
+            "$ref": "#/definitions/Response_Failure"
+        }
+    ],
+    "definitions": {
+        "Request": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "id",
+                "method",
+                "params"
+            ],
+            "properties": {
+                "id": {
+                    "type": "number"
+                },
+                "method": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                },
+                "params": {
+                    "type": "array",
+                    "items": true
+                },
+                "meta": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "loadFields": {
+                            "$ref": "#/definitions/LoadFields"
+                        }
+                    }
+                }
+            }
+        },
+        "Response_Success": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "id",
+                "result"
+            ],
+            "properties": {
+                "id": {
+                    "type": "number"
+                },
+                "result": {}
+            }
+        },
+        "Response_Failure": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "id",
+                "error"
+            ],
+            "properties": {
+                "id": {
+                    "type": "number"
+                },
+                "error": {
+                    "type": "object",
+                    "required": [
+                        "code",
+                        "message"
+                    ],
+                    "properties": {
+                        "code": {
+                            "type": "number"
+                        },
+                        "message": {
+                            "type": "string"
+                        },
+                        "data": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "LoadFields": {
+            "type": "object",
+            "patternProperties": {
+                "^[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*$": {
+                    "$ref": "#/definitions/LoadFields_field"
+                }
+            }
+        },
+        "LoadFields_field": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "pattern": "^\\*$"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+                            },
+                            {
+                                "type": "object",
+                                "minItems": 1,
+                                "maxItems": 1,
+                                "patternProperties": {
+                                    "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                                        "$ref": "#/definitions/LoadFields_field"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}
