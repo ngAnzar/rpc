@@ -336,12 +336,16 @@ export class Document {
             let params: MethodParams = []
             let throws: MethodThrows = []
 
-            for (const param of met.params) {
-                params.push(new MethodParam(param.name, this._type(param.type), param.summary, param.description))
+            if (met.params) {
+                for (const param of met.params) {
+                    params.push(new MethodParam(param.name, this._type(param.type), param.summary, param.description))
+                }
             }
 
-            for (const item of met.throws) {
-                throws.push(new MethodThrow(item.code, item.message, item.data, item.summary, item.description))
+            if (met.throws) {
+                for (const item of met.throws) {
+                    throws.push(new MethodThrow(item.code, item.message, item.data, item.summary, item.description))
+                }
             }
 
             this.methods[k] = new Method(name, params, returns, throws)

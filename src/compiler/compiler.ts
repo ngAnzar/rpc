@@ -197,23 +197,21 @@ export class Compiler {
     protected renderImports(selfPath: string, factoryPath: string): string {
         let selfModuleParts = this.doc.module.parent.split("/")
         function determineFrom(other: QName) {
+            let selfDir = path.dirname(selfPath)
             let otherModuleParts = other.document.module.parent.split("/")
-            let i = 0, l = selfModuleParts.length
+            let otherParts = selfDir.split(/[\\\/]/)
+            otherParts = otherParts.slice(0, otherParts.length - selfModuleParts.length)
+            otherParts = otherParts.concat(otherModuleParts)
+            otherParts.push(other.document.module.name)
 
-            for (; i < l; i++) {
-                if (selfModuleParts[i] !== otherModuleParts[i]) {
-                    if (i === 0) {
-                        return other.document.module.parent + "/" + other.document.module.name
-                    }
-                }
+            let pth = path.relative(selfDir, otherParts.join(path.sep))
+                .replace(/\.[tj]s$/, "")
+                .replace(/[\\\/]+/g, "/")
+            if (!pth.startsWith(".")) {
+                pth = "./" + pth
             }
 
-            let relDepth = Math.max(0, selfModuleParts.length - otherModuleParts.length)
-            let rel = relDepth
-                ? "../".repeat(selfModuleParts.length - otherModuleParts.length)
-                : "./"
-
-            return rel + otherModuleParts.slice(i).join("/") + other.document.module.name
+            return pth
         }
 
         let groupByModule: { [key: string]: Array<{ fname: string[], alias: string }> } = {}
