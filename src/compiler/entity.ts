@@ -14,11 +14,12 @@ import { Compiler } from "./compiler"
 
 export function createEntityCode(comp: Compiler, ent: Entity): string {
     let res = `export class ${Entity.qname(ent).name} extends Entity {\n`
+    res += `    public static readonly PROVIDE: FactoryProvider = { provide: ${Entity.qname(ent).name}, useFactory: ${Entity.qname(ent).name}.factory, deps: [Client] }\n`
     const fields = Entity.fields(ent)
     for (const f in fields) {
         res += createFieldCode(comp, fields[f]) + "\n"
     }
-    res += `}`
+    res += `}\n`
     return res
 }
 

@@ -1,3 +1,5 @@
+import { FactoryProvider } from "@angular/core"
+
 
 const REQUEST = Symbol("@rpc.request")
 
@@ -20,7 +22,7 @@ class User extends RpcEntity {
 }
 
 
-export const USER_PROVIDE = {
+export const USER_PROVIDE: FactoryProvider = {
     provide: User,
     deps: [RpcClient],
     useFactory: User.factory
@@ -33,6 +35,9 @@ namespace User {
         this[REQUEST]("User.list", filter)
     }
 }
+
+
+
 
 
 class RpcService { }

@@ -231,8 +231,9 @@ export class Compiler {
         }
 
         let res: string[] = [
+            `import { FactoryProvider } from "@angular/core"`,
             `import { Observable } from "rxjs"`,
-            `import { Entity, Field, Method, RPC_CLIENT } from "@anzar/rpc"`
+            `import { Entity, Field, Method, Client, RPC_CLIENT } from "@anzar/rpc"`
         ]
 
         for (const impFrom in groupByModule) {
