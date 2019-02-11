@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const path = require("path")
+const glob = require("glob")
 const { ArgumentParser } = require("argparse")
 const { compile } = require("./compiler")
 
@@ -31,6 +32,10 @@ if (!args.input || args.input.length === 0) {
 }
 
 const outPath = path.normalize(path.resolve(args.outPath || "./"))
-const input = args.input.map(v => path.normalize(path.resolve(v)))
+
+let input = []
+for (const i of args.input) {
+    input = input.concat(glob.sync(i))
+}
 
 compile(input, { outPath })
