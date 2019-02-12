@@ -33,13 +33,13 @@ export function compile(files: string[], options: CompileOptions) {
 
     while (files.length) {
         const file = files.shift() as string
+        const doc = registry.get(file)
+        const comp = new Compiler(doc)
+        doc.outPath = path.normalize(doc.outPath || (path.join(session.outPath, doc.module.parent, doc.module.name) + ".ts"))
 
-        if (!emitted[file]) {
-            emitted[file] = true
+        if (!emitted[doc.outPath]) {
+            emitted[doc.outPath] = true
 
-            const doc = registry.get(file)
-            const comp = new Compiler(doc)
-            doc.outPath = doc.outPath || (path.join(session.outPath, doc.module.parent, doc.module.name) + ".ts")
             comp.emit(doc.outPath, factoryPath)
 
             files = files.concat(comp.deps)

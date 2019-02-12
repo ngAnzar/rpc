@@ -26,9 +26,9 @@ export abstract class Transport {
         }).pipe(share())
     }
 
-    protected abstract _send(trans: Transaction<any>);
+    protected abstract _send(trans: Transaction<any>): void;
 
-    protected abstract _cancel(trans: Transaction<any>);
+    protected abstract _cancel(trans: Transaction<any>): void;
 }
 
 

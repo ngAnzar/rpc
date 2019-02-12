@@ -48,12 +48,12 @@ function createModuleCode(outPath: string, documents: Document[], deps: string[]
 
         let name = getModuleName(v)
         refdModules.push(name)
-        return `import { ${name} } from "${pth}"`
+        return `import { ${name} } from "${pth}"  // dependency`
     }))
 
     for (const doc of documents) {
         let e = getDocumentExports(doc)
-        imports.push(`import { ${e.join(", ")} } from "./${doc.module.name}"`)
+        imports.push(`import { ${e.join(", ")} } from "./${doc.module.name}"  // relative`)
         exports_ = exports_.concat(e)
 
         let pEnt = Object.values(doc.entities).map(v => Entity.qname(v).tln)
