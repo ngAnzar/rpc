@@ -1,0 +1,12 @@
+module: some-package-name/api/valami
+entities:
+    Point:
+        x: { type: number }
+        y: { type: number }
+
+methods:
+    PointBackend.query:
+        params:
+            - { name: filter, type: { $ref: "#/entities/Point" } }
+        returns:
+            type: { $ref: "#/entities/Point" }

@@ -1,6 +1,7 @@
 import * as path from "path"
 import * as fs from "fs-extra"
 import * as ajv from "ajv"
+import * as YAML from "yaml"
 
 
 export const schema = require("../../definition.schema.json")
@@ -12,7 +13,16 @@ export const validator = ajvInstance.compile(schema)
 
 
 export function loadDefinition(jsonPath: string) {
-    const content = fs.readJsonSync(jsonPath)
+    const raw = fs.readFileSync(jsonPath, "utf-8") as string
+    let content = jsonPath.endsWith(".json")
+        ? JSON.parse(raw)
+        : (jsonPath.endsWith(".yaml") || jsonPath.endsWith(".yml"))
+            ? YAML.parse(raw)
+            : null
+
+    if (!content) {
+        throw new Error("Invalid definition")
+    }
 
     if (validator(content)) {
         return content

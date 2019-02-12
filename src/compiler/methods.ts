@@ -39,9 +39,9 @@ export function createMethods(comp: Compiler) {
 
 
 function createMethodsCls(comp: Compiler, name: string, methods: Method[]): string {
-    let res = `export class ${name} extends Client__ {\n`
+    let res = `export class ${name} extends HTTPClient__ {\n`
 
-    res += `    public constructor(@Inject(HTTPTransport) public readonly transport: Transport) { super() } \n\n`
+    //res += `    public constructor(@Inject(HTTPTransport) public readonly transport: Transport) { super() } \n\n`
 
     for (const met of methods) {
         res += [

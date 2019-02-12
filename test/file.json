@@ -11,7 +11,7 @@
             },
             "point": {
                 "type": {
-                    "$ref": "point.json#/entities/Point"
+                    "$ref": "point.yml#/entities/Point"
                 }
             }
         }

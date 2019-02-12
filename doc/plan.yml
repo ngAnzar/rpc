@@ -1,0 +1,11 @@
+entities:
+  User:
+    name: { type: string }
+    created_time: { type: datetime }
+
+methods:
+  UserBackend.list:
+    params:
+      - { name: filter, type: number }
+    returns:
+      type: "#/entities/User"
