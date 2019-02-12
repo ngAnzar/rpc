@@ -94,7 +94,7 @@
         }
     },
     "methods": {
-        "User.list": {
+        "UserBackend.list": {
             "params": [
                 {
                     "name": "filter",

@@ -1,2 +1,2 @@
 import { Document } from "../schema";
-export declare function createModuleCode(documents: Document[]): string;
+export declare function createModule(outPath: string, documents: Document[], deps: string[]): void;

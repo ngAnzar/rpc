@@ -39,11 +39,13 @@ export function createMethods(comp: Compiler) {
 
 
 function createMethodsCls(comp: Compiler, name: string, methods: Method[]): string {
-    let res = `export class ${name} extends Client {\n`
+    let res = `export class ${name} extends Client__ {\n`
+
+    res += `    public constructor(@Inject(HTTPTransport) public readonly transport: Transport) { super() } \n\n`
 
     for (const met of methods) {
         res += [
-            `    @Method(${JSON.stringify(met.name.fullName)})`,
+            `    @Method__(${JSON.stringify(met.name.fullName)})`,
             `    public readonly ${met.name.name}: ${getMethodAsType(comp, met)}`
         ].join("\n") + "\n"
     }

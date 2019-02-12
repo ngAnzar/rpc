@@ -8,6 +8,11 @@
             },
             "size": {
                 "type": "number"
+            },
+            "point": {
+                "type": {
+                    "$ref": "point.json#/entities/Point"
+                }
             }
         }
     }
