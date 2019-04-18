@@ -28,18 +28,24 @@ export class Compiler {
         let entities: string = this.renderEntities()
         let methods: string = this.renderMethods()
         let content = this.renderImports(filePath, factoryPath)
-            + "\n\n"
-            + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
-            + `/*                       ENTITIES                        */\n`
-            + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
-            + entities + "\n\n"
-            + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
-            + `/*                        METHODS                        */\n`
-            + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
-            + methods
-            + "\n"
 
-        fs.writeFileSync(filePath, content)
+        if (entities && entities.length) {
+            content += "\n\n"
+                + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
+                + `/*                       ENTITIES                        */\n`
+                + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
+                + entities
+        }
+
+        if (methods && methods.length) {
+            content += "\n\n"
+                + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
+                + `/*                        METHODS                        */\n`
+                + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
+                + methods
+        }
+
+        fs.writeFileSync(filePath, content + "\n")
     }
 
     public importType(type: Type) {

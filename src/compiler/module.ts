@@ -63,6 +63,7 @@ function createModuleCode(outPath: string, documents: Document[], deps: string[]
     }
 
     exports_ = exports_.filter((v, i, a) => a.indexOf(v) === i)
+    provides = provides.filter((v, i, a) => a.indexOf(v) === i)
 
     let moduleName = getModuleName(outPath)
     let lItemSep = "\n        "
