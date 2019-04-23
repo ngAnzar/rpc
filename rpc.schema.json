@@ -40,7 +40,9 @@
                                 "type": {
                                     "$ref": "https://raw.githubusercontent.com/ngAnzar/rpc/master/definition.schema.json#/definitions/Type"
                                 },
-                                "default": {},
+                                "optional": {
+                                    "type": "boolean"
+                                },
                                 "summary": {
                                     "type": "string"
                                 },

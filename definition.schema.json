@@ -80,7 +80,9 @@
                                         "type": {
                                             "$ref": "#/definitions/Type"
                                         },
-                                        "default": {},
+                                        "optional": {
+                                            "type": "boolean"
+                                        },
                                         "summary": {
                                             "type": "string"
                                         },
