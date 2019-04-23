@@ -254,6 +254,7 @@ export class Method {
 export class MethodParam {
     public constructor(public name: string,
         public type: Type,
+        public optional: Boolean,
         public summary: string,
         public description: string) {
 
@@ -282,7 +283,7 @@ export class MethodThrow {
 
 
 export type Methods = { [key: string]: Method }
-export type MethodParams = MethodParam[]
+export type MethodParams = { [key: string]: MethodParam }
 export type MethodThrows = MethodThrow[]
 
 
@@ -333,12 +334,13 @@ export class Document {
             const met = mets[k]
 
             let returns: MethodReturns = new MethodReturns(this._type(met.returns.type), met.returns.summary, met.returns.description)
-            let params: MethodParams = []
+            let params: MethodParams = {}
             let throws: MethodThrows = []
 
             if (met.params) {
-                for (const param of met.params) {
-                    params.push(new MethodParam(param.name, this._type(param.type), param.summary, param.description))
+                for (const k in met.params) {
+                    const param = met.params[k]
+                    params[k] = new MethodParam(k, this._type(param.type), param.optional, param.summary, param.description)
                 }
             }
 
@@ -401,9 +403,10 @@ export class Document {
         for (const k in this.methods) {
             const met = this.methods[k]
 
-            for (const p of met.params) {
-                if (p.type) {
-                    p.type.resolve()
+            for (const pname in met.params) {
+                const param = met.params[pname]
+                if (param.type) {
+                    param.type.resolve()
                 }
             }
 

@@ -95,20 +95,43 @@
     },
     "methods": {
         "UserBackend.list": {
-            "params": [
-                {
-                    "name": "filter",
+            "params": {
+                "filter": {
                     "summary": "Short description...",
                     "description": "Long description...",
                     "type": {
                         "$ref": "#/entities/User"
                     }
                 }
-            ],
+            },
             "returns": {
                 "summary": "nothing",
                 "type": {
                     "$ref": "#/entities/UserListRes"
+                }
+            },
+            "throws": [
+                {
+                    "code": 400,
+                    "message": "string",
+                    "data": {
+                        "$ref": ""
+                    }
+                }
+            ]
+        },
+        "UserBackend.get": {
+            "params": {
+                "id": {
+                    "summary": "Short description...",
+                    "description": "Long description...",
+                    "type": "number"
+                }
+            },
+            "returns": {
+                "summary": "nothing",
+                "type": {
+                    "$ref": "#/entities/User"
                 }
             },
             "throws": [

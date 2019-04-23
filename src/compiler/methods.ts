@@ -39,6 +39,7 @@ export function createMethods(comp: Compiler) {
 
 
 function createMethodsCls(comp: Compiler, name: string, methods: Method[]): string {
+    let requirements: string[] = []
     let res = `export class ${name} extends HTTPClient__ {\n`
 
     //res += `    public constructor(@Inject(HTTPTransport) public readonly transport: Transport) { super() } \n\n`
@@ -46,8 +47,12 @@ function createMethodsCls(comp: Compiler, name: string, methods: Method[]): stri
     for (const met of methods) {
         res += [
             `    @Method__(${JSON.stringify(met.name.fullName)})`,
-            `    public readonly ${met.name.name}: ${getMethodAsType(comp, met)}`
+            `    public readonly ${met.name.name}: ${getMethodAsType(comp, requirements, met)}`
         ].join("\n") + "\n"
+    }
+
+    if (requirements.length) {
+        res = requirements.join("\n") + "\n\n" + res
     }
 
     return res + "}"
@@ -55,33 +60,44 @@ function createMethodsCls(comp: Compiler, name: string, methods: Method[]): stri
 
 
 function createExtension(comp: Compiler, name: string, methods: Method[]): string {
+    let requirements: string[] = []
     let res = `export namespace ${name} {\n`
 
     for (const met of methods) {
         res += [
-            `    export function ${met.name.name}${getMethodAsType(comp, met, ":")} {`,
+            `    export function ${met.name.name}${getMethodAsType(comp, requirements, met, ":")} {`,
             `        return this[RPC_CLIENT].call(${JSON.stringify(met.name.fullName)}, ...arguments) as any`,
             `    }`
         ].join("\n") + "\n"
+    }
+
+    if (requirements.length) {
+        res = requirements.join("\n") + "\n\n" + res
     }
 
     return res + `}`
 }
 
 
-function getMethodAsType(comp: Compiler, met: Method, rs: string = " =>"): string {
-    let callType: string[] = []
+function getMethodAsType(comp: Compiler, requirements: string[], met: Method, rs: string = " =>"): string {
+    let params: string[] = []
 
-    for (const p of met.params) {
-        callType.push(`${p.name}: ${comp.typeAsTs(p.type)}`)
+    for (const name in met.params) {
+        const param = met.params[name]
+        const optional = param.optional ? "?" : ""
+        params.push(`${name}${optional}: ${comp.typeAsTs(param.type)}`)
     }
 
-    return `(${callType.join(", ")})${rs} Observable<${comp.typeAsTs(met.returns.type)}>`
+    if (params.length) {
+        let safeName = met.name.fullName.replace(/\./, "_")
+        requirements.push([
+            `export interface ${safeName}_Params {`,
+            `\t` + params.join("\n\t"),
+            `}`
+        ].join("\n"))
+
+        return `(params: ${safeName}_Params)${rs} Observable<${comp.typeAsTs(met.returns.type)}>`
+    } else {
+        return `()${rs} Observable<${comp.typeAsTs(met.returns.type)}>`
+    }
 }
-
-
-
-function createMethodFunction() {
-
-}
-

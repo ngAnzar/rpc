@@ -2,12 +2,12 @@
     "$schema": "../src/schema/rpc.schema.json",
     "id": 1,
     "method": "User.save",
-    "params": [
-        {
+    "params": {
+        "data": {
             "id": 3,
             "name": "John Doe"
         }
-    ],
+    },
     "meta": {
         "loadFields": {
             "User": "*",

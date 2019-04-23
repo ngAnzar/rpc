@@ -7,6 +7,6 @@ entities:
 methods:
     PointBackend.query:
         params:
-            - { name: filter, type: { $ref: "#/entities/Point" } }
+            name: { type: { $ref: "#/entities/Point" } }
         returns:
             type: { $ref: "#/entities/Point" }

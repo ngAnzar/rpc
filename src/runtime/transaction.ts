@@ -10,7 +10,7 @@ export class Transaction<T> {
     public constructor(
         public readonly id: number,
         public readonly method: string,
-        public readonly params: any[],
+        public readonly params: { [key: string]: any },
         public readonly meta?: RequestMeta) {
     }
 
@@ -48,7 +48,7 @@ export interface RequestMeta {
 export interface Request {
     id: number,
     method: string,
-    params: any[],
+    params: { [key: string]: any },
     meta?: RequestMeta
 }
 

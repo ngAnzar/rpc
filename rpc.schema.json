@@ -31,8 +31,28 @@
                     "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*$"
                 },
                 "params": {
-                    "type": "array",
-                    "items": true
+                    "type": "object",
+                    "patternProperties": {
+                        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "type": {
+                                    "$ref": "https://raw.githubusercontent.com/ngAnzar/rpc/master/definition.schema.json#/definitions/Type"
+                                },
+                                "default": {},
+                                "summary": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ]
+                        }
+                    }
                 },
                 "meta": {
                     "type": "object",

@@ -100,9 +100,10 @@ export declare class Method {
 export declare class MethodParam {
     name: string;
     type: Type;
+    optional: Boolean;
     summary: string;
     description: string;
-    constructor(name: string, type: Type, summary: string, description: string);
+    constructor(name: string, type: Type, optional: Boolean, summary: string, description: string);
 }
 export declare class MethodReturns {
     type: Type;
@@ -121,7 +122,9 @@ export declare class MethodThrow {
 export declare type Methods = {
     [key: string]: Method;
 };
-export declare type MethodParams = MethodParam[];
+export declare type MethodParams = {
+    [key: string]: MethodParam;
+};
 export declare type MethodThrows = MethodThrow[];
 export declare class Module {
     parent: string;
