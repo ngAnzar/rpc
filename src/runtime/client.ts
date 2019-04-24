@@ -36,11 +36,11 @@ export function Method(name: string, options: MethodOptions = {}) {
         }
 
         target[propertyKey] = map_
-            ? function (this: Client, ...args: any[]): any {
-                return this.transport.call(action_, args, lf(this)).pipe(map(map_))
+            ? function (this: Client, params: { [key: string]: any }): any {
+                return this.transport.call(action_, params, lf(this)).pipe(map(map_))
             }
-            : function (this: Client, ...args: any[]): any {
-                return this.transport.call(action_, args, lf(this))
+            : function (this: Client, params: { [key: string]: any }): any {
+                return this.transport.call(action_, params, lf(this))
             }
     }
 }

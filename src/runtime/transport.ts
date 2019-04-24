@@ -7,10 +7,10 @@ import { Transaction, RequestMeta, RpcError } from "./transaction"
 
 
 export abstract class Transport {
-    protected nextId: number = 0
+    protected nextId: number = 1
     protected transactions: { [key: number]: Transaction<any> } = {}
 
-    public call(name: string, params: any[], meta?: RequestMeta): Observable<any> {
+    public call(name: string, params: { [key: string]: any }, meta?: RequestMeta): Observable<any> {
         const trans = new Transaction(this.nextId++, name, params, meta)
         this.transactions[trans.id] = trans
         return new Observable(observer => {
@@ -46,8 +46,6 @@ export class HTTPTransport extends Transport {
         const headers = new HttpHeaders({
             "Content-Type": "application/json"
         })
-
-        console.log({ headers })
 
         this.http.post(this.endpoint, JSON.stringify(data), { headers, withCredentials: true })
             .pipe(takeUntil(trans.progress))
