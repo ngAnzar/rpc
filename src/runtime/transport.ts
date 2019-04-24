@@ -1,5 +1,5 @@
 import { InjectionToken, Inject } from "@angular/core"
-import { HttpClient } from "@angular/common/http"
+import { HttpClient, HttpHeaders } from "@angular/common/http"
 import { Observable } from "rxjs"
 import { share, takeUntil } from "rxjs/operators"
 
@@ -43,8 +43,13 @@ export class HTTPTransport extends Transport {
 
     protected _send(trans: Transaction<any>) {
         const data = this._render(trans)
+        const headers = new HttpHeaders({
+            "Content-Type": "application/json"
+        })
 
-        this.http.post(this.endpoint, JSON.stringify(data), { withCredentials: true })
+        console.log({ headers })
+
+        this.http.post(this.endpoint, JSON.stringify(data), { headers, withCredentials: true })
             .pipe(takeUntil(trans.progress))
             .subscribe(success => {
                 let body: any[] = Array.isArray(success) ? success : [success]
@@ -72,12 +77,15 @@ export class HTTPTransport extends Transport {
     }
 
     protected _render(trans: Transaction<any>) {
-        return {
+        let res: any = {
             id: trans.id,
             method: trans.method,
-            params: trans.params,
-            meta: trans.meta
+            params: trans.params
         }
+        if (trans.meta) {
+            res.meta = trans.meta
+        }
+        return res
     }
 
     protected _updateTrans(trans: Transaction<any>, response: any) {
