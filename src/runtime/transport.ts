@@ -91,7 +91,7 @@ export class HTTPTransport extends Transport {
         if (error) {
             trans.done(null, new RpcError(error.message, error.code, error.data))
         } else {
-            trans.done(response.data)
+            trans.done(response.result)
         }
     }
 }
