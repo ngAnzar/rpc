@@ -39,6 +39,12 @@ export declare class Type_Tuple extends Type {
     protected _resolve(): void;
     protected _createUid(): string;
 }
+export declare class Type_Optional extends Type {
+    readonly itemType: Type;
+    constructor(itemType: Type);
+    protected _resolve(): void;
+    protected _createUid(): string;
+}
 export declare class Type_Polymorph extends Type {
     readonly mapping: Type_PolymorphMap[];
     constructor(mapping: Type_PolymorphMap[]);

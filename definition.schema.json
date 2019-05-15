@@ -194,6 +194,9 @@
                         "listOf": {
                             "$ref": "#/definitions/Type"
                         },
+                        "optional": {
+                            "$ref": "#/definitions/Type"
+                        },
                         "polymorph": {
                             "$ref": "#/definitions/Polymorph"
                         }

@@ -3,7 +3,7 @@ import * as path from "path"
 
 import {
     registry, Document, Entity, Module,
-    Type, Type_List, Type_Mapping, Type_Native, Type_Polymorph, Type_Ref, Type_Tuple, QName
+    Type, Type_List, Type_Mapping, Type_Native, Type_Polymorph, Type_Ref, Type_Tuple, Type_Optional, QName
 } from "../schema"
 
 import { TypeFactory } from "./type-factory"
@@ -71,6 +71,8 @@ export class Compiler {
             for (const t of type.items) {
                 this.importType(t)
             }
+        } else if (type instanceof Type_Optional) {
+            this.importType(type.itemType)
         } else {
             console.log("Unhandled type>>>", type)
             throw new Error("Unhandled type")
@@ -160,6 +162,8 @@ export class Compiler {
                 })
                 return `(${this.typeAsTs(v.type)} & ${JSON.stringify(id)})`
             }).join(" | ")
+        } else if (type instanceof Type_Optional) {
+            return `${this.typeAsTs(type.itemType)} | null`
         }
 
         throw new Error("Ungandled type")

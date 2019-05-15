@@ -27,6 +27,7 @@ declare class _TypeFactory {
     protected _mapFactory(comp: Compiler, itemType: Type): string;
     protected _tupleFactory(comp: Compiler, itemTypes: Type[]): string;
     protected _polymorphicFactory(comp: Compiler, map: Type_PolymorphMap[]): string;
+    protected _optionalFactory(comp: Compiler, itemType: Type): string;
 }
 export declare const TypeFactory: _TypeFactory;
 export {};

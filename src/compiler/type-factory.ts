@@ -1,7 +1,7 @@
 import * as fs from "fs-extra"
 import * as path from "path"
 
-import { Type, Type_List, Type_Mapping, Type_Native, Type_Polymorph, Type_Ref, Type_Tuple, Entity, Type_PolymorphMap } from "../schema"
+import { Type, Type_List, Type_Mapping, Type_Native, Type_Polymorph, Type_Ref, Type_Tuple, Entity, Type_PolymorphMap, Type_Optional } from "../schema"
 import { Compiler } from "./compiler"
 
 
@@ -75,6 +75,8 @@ class _TypeFactory {
             return this._tupleFactory(comp, type.items)
         } else if (type instanceof Type_Polymorph) {
             return this._polymorphicFactory(comp, type.mapping)
+        } else if (type instanceof Type_Optional) {
+            return this._optionalFactory(comp, type.itemType)
         }
         console.log(type)
         throw new Error("Unhandled type")
@@ -107,25 +109,29 @@ class _TypeFactory {
         }).join("\n")
     }
 
+
     protected _anyFactory(comp: Compiler): string {
-        if (!this._helpers["__any"]) {
-            this._helpers["__any"] = [
-                `function __any(value: any): any {`,
+        const name = `${this.name}any`
+        if (!this._helpers[name]) {
+            this._helpers[name] = [
+                `export function ${name}(value: any): any {`,
                 `    return value`,
                 `}`
             ].join("\n")
         }
 
-        let facName = this.name + (Object.values(this._factories).length + 1)
-        this._factories[facName] = `export const ${facName} = __any`
-        return facName
+        return name
+
+        // let facName = this.name + (Object.values(this._factories).length + 1)
+        // this._factories[facName] = `export const ${facName} = __any`
+        // return facName
     }
 
     protected _entityFactory(comp: Compiler, name: string): string {
         if (!this._helpers["__newEntity"]) {
             this._helpers["__newEntity"] = [
                 `function __newEntity<T>(entity: { new(data: any): T }, obj: any): T {`,
-                `    return obj == null ? null : obj instanceof entity ? obj : new entity(obj)`,
+                `    return obj instanceof entity ? obj : new entity(obj)`,
                 `}`
             ].join("\n")
         }
@@ -223,11 +229,18 @@ class _TypeFactory {
 
         if (useSingleField) {
             let facName = this.name + (Object.values(this._factories).length + 1)
-            this._factories[facName] = `export const ${facName} = (obj: any) => obj == null ? null : ${mapName}[obj[${JSON.stringify(useSingleField)}]](obj)`
+            this._factories[facName] = `export const ${facName} = (obj: any) => ${mapName}[obj[${JSON.stringify(useSingleField)}]](obj)`
             return facName
         } else {
             throw new Error("TODO: multi field polymorphic mapping")
         }
+    }
+
+    protected _optionalFactory(comp: Compiler, itemType: Type): string {
+        let itemFactory = this.get(comp, itemType)
+        let facName = this.name + (Object.values(this._factories).length + 1)
+        this._factories[facName] = `export const ${facName} = (obj: any) => obj == null ? null : ${itemFactory}(obj)`
+        return facName
     }
 }
 

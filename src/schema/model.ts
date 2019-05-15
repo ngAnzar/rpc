@@ -137,6 +137,21 @@ export class Type_Tuple extends Type {
 }
 
 
+export class Type_Optional extends Type {
+    public constructor(public readonly itemType: Type) {
+        super()
+    }
+
+    protected _resolve() {
+        this.itemType.resolve()
+    }
+
+    protected _createUid(): string {
+        return `Type_Optional[${this.itemType.uid}]`
+    }
+}
+
+
 export class Type_Polymorph extends Type {
     public constructor(public readonly mapping: Type_PolymorphMap[]) {
         super()
@@ -371,6 +386,8 @@ export class Document {
                 return new Type_Mapping(this._type(t.mapOf))
             } else if (t.listOf) {
                 return new Type_List(this._type(t.listOf))
+            } else if (t.optional) {
+                return new Type_Optional(this._type(t.optional))
             } else if (t.polymorph) {
                 const identity = t.polymorph.identity
                 let idFields = Array.isArray(identity) ? identity : [identity]

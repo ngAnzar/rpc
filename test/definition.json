@@ -141,6 +141,11 @@
                 },
                 "xyz_field": {
                     "type": "any"
+                },
+                "optional_field": {
+                    "type": {
+                        "optional": "string"
+                    }
                 }
             }
         }
