@@ -202,7 +202,13 @@
             ]
         },
         "PolyBackend.get": {
-            "params": {},
+            "params": {
+                "id": {
+                    "type": {
+                        "optional": "integer"
+                    }
+                }
+            },
             "returns": {
                 "type": {
                     "$ref": "#/entities/PolyBase"

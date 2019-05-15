@@ -265,7 +265,6 @@ export class Method {
 export class MethodParam {
     public constructor(public name: string,
         public type: Type,
-        public optional: Boolean,
         public summary: string,
         public description: string) {
 
@@ -359,7 +358,7 @@ export class Document {
             if (met.params) {
                 for (const k in met.params) {
                     const param = met.params[k]
-                    params[k] = new MethodParam(k, this._type(param.type), param.optional, param.summary, param.description)
+                    params[k] = new MethodParam(k, this._type(param.type), param.summary, param.description)
                 }
             }
 

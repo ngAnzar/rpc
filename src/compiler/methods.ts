@@ -1,5 +1,5 @@
 import { Compiler } from "./compiler"
-import { Entity, Method } from "../schema"
+import { Entity, Method, Type_Optional } from "../schema"
 
 
 
@@ -84,8 +84,13 @@ function getMethodAsType(comp: Compiler, requirements: string[], met: Method, rs
 
     for (const name in met.params) {
         const param = met.params[name]
-        const optional = param.optional ? "?" : ""
-        params.push(`${name}${optional}: ${comp.typeAsTs(param.type)}`)
+        if (param.type instanceof Type_Optional) {
+            params.push(`${name}?: ${comp.typeAsTs(param.type.itemType)}`)
+        } else {
+            params.push(`${name}: ${comp.typeAsTs(param.type)}`)
+        }
+
+
     }
 
     if (params.length) {

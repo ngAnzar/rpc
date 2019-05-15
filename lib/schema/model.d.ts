@@ -105,10 +105,9 @@ export declare class Method {
 export declare class MethodParam {
     name: string;
     type: Type;
-    optional: Boolean;
     summary: string;
     description: string;
-    constructor(name: string, type: Type, optional: Boolean, summary: string, description: string);
+    constructor(name: string, type: Type, summary: string, description: string);
 }
 export declare class MethodReturns {
     type: Type;
