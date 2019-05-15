@@ -21,6 +21,7 @@ declare class _TypeFactory {
         code: string;
     };
     protected _renderImports(selfPath: string): string;
+    protected _anyFactory(comp: Compiler): string;
     protected _entityFactory(comp: Compiler, name: string): string;
     protected _listFactory(comp: Compiler, itemType: Type): string;
     protected _mapFactory(comp: Compiler, itemType: Type): string;

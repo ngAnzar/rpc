@@ -49,6 +49,7 @@ class _TypeFactory {
                 case "integer": return "Number"
                 case "number": return "Number"
                 case "boolean": return "Boolean"
+                case "any": return this._anyFactory(comp)
                 case "date":
                 case "datetime":
                     if (this._dateFactory) {
@@ -106,11 +107,25 @@ class _TypeFactory {
         }).join("\n")
     }
 
+    protected _anyFactory(comp: Compiler): string {
+        if (!this._helpers["__any"]) {
+            this._helpers["__any"] = [
+                `function __any(value: any): any {`,
+                `    return value`,
+                `}`
+            ].join("\n")
+        }
+
+        let facName = this.name + (Object.values(this._factories).length + 1)
+        this._factories[facName] = `export const ${facName} = __any`
+        return facName
+    }
+
     protected _entityFactory(comp: Compiler, name: string): string {
         if (!this._helpers["__newEntity"]) {
             this._helpers["__newEntity"] = [
                 `function __newEntity<T>(entity: { new(data: any): T }, obj: any): T {`,
-                `   return obj == null ? null : obj instanceof entity ? obj : new entity(obj)`,
+                `    return obj == null ? null : obj instanceof entity ? obj : new entity(obj)`,
                 `}`
             ].join("\n")
         }

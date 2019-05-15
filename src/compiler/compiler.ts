@@ -137,6 +137,7 @@ export class Compiler {
                 case "number": return "number"
                 case "date": return "Date"
                 case "datetime": return "Date"
+                case "any": return "any"
             }
             throw new Error("Unhandled native type")
         } else if (type instanceof Type_Ref) {

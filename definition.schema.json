@@ -172,7 +172,8 @@
                         "null",
                         "string",
                         "date",
-                        "datetime"
+                        "datetime",
+                        "any"
                     ]
                 },
                 {
