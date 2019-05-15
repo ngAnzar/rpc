@@ -39,22 +39,22 @@ export declare class Type_Tuple extends Type {
     protected _resolve(): void;
     protected _createUid(): string;
 }
-export declare class Type_Polymorphic extends Type {
-    readonly mapping: Type_PolymorphicMap[];
-    constructor(mapping: Type_PolymorphicMap[]);
+export declare class Type_Polymorph extends Type {
+    readonly mapping: Type_PolymorphMap[];
+    constructor(mapping: Type_PolymorphMap[]);
     protected _resolve(): void;
     protected _createUid(): string;
 }
-export declare class Type_PolymorphicId {
+export declare class Type_PolymorphId {
     readonly fields: string[];
     readonly values: Array<string | number>;
     constructor(fields: string[], values: Array<string | number>);
     readonly uid: string;
 }
-export declare class Type_PolymorphicMap {
-    readonly id: Type_PolymorphicId;
+export declare class Type_PolymorphMap {
+    readonly id: Type_PolymorphId;
     readonly type: Type_Ref;
-    constructor(id: Type_PolymorphicId, type: Type_Ref);
+    constructor(id: Type_PolymorphId, type: Type_Ref);
     readonly uid: string;
 }
 export declare class QName {
@@ -69,13 +69,12 @@ export declare class QName {
     readonly document: Document;
 }
 declare const ENT_NAME: unique symbol;
-declare const ENT_FIELDS: unique symbol;
 export declare class Entity {
+    readonly fields: EntityFields;
+    readonly polymorph: Type_Polymorph;
     static qname(ent: Entity): QName;
-    static fields(ent: Entity): EntityFields;
     protected [ENT_NAME]: QName;
-    protected [ENT_FIELDS]: EntityFields;
-    constructor(name: QName, fields: EntityFields);
+    constructor(name: QName, fields: EntityFields, polymorph: Type_Polymorph);
 }
 export declare class EntityField {
     name: string;

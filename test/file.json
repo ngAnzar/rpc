@@ -1,17 +1,19 @@
 {
-    "$schema": "../src/schema/definition.schema.json",
+    "$schema": "../definition.schema.json",
     "module": "some-package-name/api",
     "entities": {
         "File": {
-            "name": {
-                "type": "string"
-            },
-            "size": {
-                "type": "number"
-            },
-            "point": {
-                "type": {
-                    "$ref": "point.yml#/entities/Point"
+            "fields": {
+                "name": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "number"
+                },
+                "point": {
+                    "type": {
+                        "$ref": "point.yml#/entities/Point"
+                    }
                 }
             }
         }

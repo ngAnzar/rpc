@@ -1,4 +1,4 @@
-import { Type, Entity, Type_PolymorphicMap } from "../schema";
+import { Type, Entity, Type_PolymorphMap } from "../schema";
 import { Compiler } from "./compiler";
 declare class _TypeFactory {
     readonly name: string;
@@ -25,7 +25,7 @@ declare class _TypeFactory {
     protected _listFactory(comp: Compiler, itemType: Type): string;
     protected _mapFactory(comp: Compiler, itemType: Type): string;
     protected _tupleFactory(comp: Compiler, itemTypes: Type[]): string;
-    protected _polymorphicFactory(comp: Compiler, map: Type_PolymorphicMap[]): string;
+    protected _polymorphicFactory(comp: Compiler, map: Type_PolymorphMap[]): string;
 }
 export declare const TypeFactory: _TypeFactory;
 export {};

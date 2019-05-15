@@ -1,8 +1,9 @@
 module: some-package-name/api/valami
 entities:
     Point:
-        x: { type: number }
-        y: { type: number }
+        fields:
+            x: { type: number }
+            y: { type: number }
 
 methods:
     PointBackend.query:

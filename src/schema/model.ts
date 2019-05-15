@@ -63,7 +63,7 @@ export class Type_Ref extends Type {
 
         if (!((this.referenced as any) instanceof Entity) &&
             !((this.referenced as any) instanceof Type)) {
-            throw new Error("Invalid reference. The reference must be point to entity or a type")
+            throw new Error(`Invalid reference ${docPath}#${jsonPath}. The reference must be point to entity or a type`)
         }
     }
 
@@ -137,8 +137,8 @@ export class Type_Tuple extends Type {
 }
 
 
-export class Type_Polymorphic extends Type {
-    public constructor(public readonly mapping: Type_PolymorphicMap[]) {
+export class Type_Polymorph extends Type {
+    public constructor(public readonly mapping: Type_PolymorphMap[]) {
         super()
     }
 
@@ -150,12 +150,12 @@ export class Type_Polymorphic extends Type {
 
     protected _createUid(): string {
         let id = Object.values(this.mapping).map(v => v.uid).join(",")
-        return `Type_Polymorphic[${id}]`
+        return `Type_Polymorph[${id}]`
     }
 }
 
 
-export class Type_PolymorphicId {
+export class Type_PolymorphId {
     public constructor(public readonly fields: string[], public readonly values: Array<string | number>) {
     }
 
@@ -165,8 +165,8 @@ export class Type_PolymorphicId {
 }
 
 
-export class Type_PolymorphicMap {
-    public constructor(public readonly id: Type_PolymorphicId, public readonly type: Type_Ref) {
+export class Type_PolymorphMap {
+    public constructor(public readonly id: Type_PolymorphId, public readonly type: Type_Ref) {
 
     }
 
@@ -210,20 +210,16 @@ export class Entity {
         return ent[ENT_NAME]
     }
 
-    public static fields(ent: Entity): EntityFields {
-        return ent[ENT_FIELDS]
-    }
+    // public static fields(ent: Entity): EntityFields {
+    //     return ent[ENT_FIELDS]
+    // }
 
     protected [ENT_NAME]: QName
-    protected [ENT_FIELDS]: EntityFields
+    // protected [ENT_FIELDS]: EntityFields
 
-    public constructor(name: QName, fields: EntityFields) {
+    public constructor(name: QName, public readonly fields: EntityFields, public readonly polymorph: Type_Polymorph) {
         this[ENT_NAME] = name
-        this[ENT_FIELDS] = fields
-
-        for (const k in fields) {
-            this[k] = fields[k]
-        }
+        // this[ENT_FIELDS] = fields
     }
 }
 
@@ -317,14 +313,22 @@ export class Document {
     protected _convertEntities(ents: { [key: string]: any }) {
         for (const k in ents) {
             const name = new QName(this.path, "/entities/", k)
+            const entity = ents[k]
             let fields: EntityFields = {}
+            let poly: any = null
 
-            for (const fieldName in ents[k]) {
-                const fieldProp = ents[k][fieldName]
-                fields[fieldName] = new EntityField(fieldName, this._type(fieldProp.type), fieldProp.summary, fieldProp.description)
+            if (entity.fields) {
+                for (const fieldName in entity.fields) {
+                    const fieldProp = entity.fields[fieldName]
+                    fields[fieldName] = new EntityField(fieldName, this._type(fieldProp.type), fieldProp.summary, fieldProp.description)
+                }
             }
 
-            this.entities[k] = new Entity(name, fields)
+            if (entity.polymorph) {
+                poly = this._type({ polymorph: entity.polymorph })
+            }
+
+            this.entities[k] = new Entity(name, fields, poly)
         }
     }
 
@@ -367,35 +371,41 @@ export class Document {
                 return new Type_Mapping(this._type(t.mapOf))
             } else if (t.listOf) {
                 return new Type_List(this._type(t.listOf))
-            } else if (t.polymorphic) {
-                const identity = t.polymorphic.identity
+            } else if (t.polymorph) {
+                const identity = t.polymorph.identity
                 let idFields = Array.isArray(identity) ? identity : [identity]
-                let mapping: Type_PolymorphicMap[] = []
+                let mapping: Type_PolymorphMap[] = []
 
-                for (const item of t.polymorphic.mapping) {
+                for (const item of t.polymorph.mapping) {
                     const idValues = Array.isArray(item.id) ? item.id : [item.id]
                     if (idFields.length !== idValues.length) {
                         throw new Error("Incorrect number of id values in polymorphic mapping definition")
                     }
-                    const id = new Type_PolymorphicId(idFields, idValues)
-                    mapping.push(new Type_PolymorphicMap(id, this._type({ $ref: item.$ref }) as Type_Ref));
+                    const id = new Type_PolymorphId(idFields, idValues)
+                    mapping.push(new Type_PolymorphMap(id, this._type({ $ref: item.$ref }) as Type_Ref));
                 }
 
-                return new Type_Polymorphic(mapping)
+                return new Type_Polymorph(mapping)
             }
         }
 
-        throw new Error("Undefined type")
+        throw new Error("Undefined type: " + JSON.stringify(t))
     }
 
     protected _resolveType() {
         for (const k in this.entities) {
             const ent = this.entities[k]
-            const fields = Entity.fields(ent)
+            const fields = ent.fields
             for (const f in fields) {
                 const field = fields[f]
                 if (field.type) {
                     field.type.resolve()
+                }
+            }
+
+            if (ent.polymorph) {
+                for (const m of ent.polymorph.mapping) {
+                    m.type.resolve()
                 }
             }
         }

@@ -1,94 +1,143 @@
 {
-    "$schema": "../src/schema/definition.schema.json",
+    "$schema": "../definition.schema.json",
     "module": "some-package-name/api/valami",
     "entities": {
         "Address": {
-            "type": {
-                "type": "string"
-            },
-            "addrField": {
-                "type": "string"
+            "fields": {
+                "type": {
+                    "type": "string"
+                },
+                "addrField": {
+                    "type": "string"
+                }
             }
         },
         "Event": {
-            "type": {
-                "type": "string"
-            },
-            "eventField": {
-                "type": "string"
+            "fields": {
+                "type": {
+                    "type": "string"
+                },
+                "eventField": {
+                    "type": "string"
+                }
             }
         },
         "User": {
-            "firstName": {
-                "type": "string"
-            },
-            "address": {
-                "type": {
-                    "$ref": "#/entities/Address"
-                }
-            },
-            "valami": {
-                "type": {
-                    "mapOf": {
+            "fields": {
+                "firstName": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": {
                         "$ref": "#/entities/Address"
                     }
-                }
-            },
-            "tuple": {
-                "type": [
-                    "number",
-                    {
-                        "$ref": "#/entities/Address"
+                },
+                "valami": {
+                    "type": {
+                        "mapOf": {
+                            "$ref": "#/entities/Address"
+                        }
                     }
-                ]
-            },
-            "picture": {
-                "type": {
-                    "$ref": "./file.json#/entities/File"
-                }
-            },
-            "node": {
-                "type": {
-                    "polymorphic": {
-                        "identity": "type",
-                        "mapping": [
-                            {
-                                "id": "event",
-                                "$ref": "#/entities/Event"
-                            },
-                            {
-                                "id": "address",
-                                "$ref": "#/entities/Address"
-                            }
-                        ]
+                },
+                "tuple": {
+                    "type": [
+                        "number",
+                        {
+                            "$ref": "#/entities/Address"
+                        }
+                    ]
+                },
+                "picture": {
+                    "type": {
+                        "$ref": "./file.json#/entities/File"
                     }
-                }
-            },
-            "nodeList": {
-                "type": {
-                    "listOf": {
-                        "$ref": "#/entities/User/node/type"
+                },
+                "node": {
+                    "type": {
+                        "polymorph": {
+                            "identity": "type",
+                            "mapping": [
+                                {
+                                    "id": "event",
+                                    "$ref": "#/entities/Event"
+                                },
+                                {
+                                    "id": "address",
+                                    "$ref": "#/entities/Address"
+                                }
+                            ]
+                        }
                     }
+                },
+                "nodeList": {
+                    "type": {
+                        "listOf": {
+                            "$ref": "#/entities/User/fields/node/type"
+                        }
+                    }
+                },
+                "created_date": {
+                    "type": "date"
+                },
+                "created_time": {
+                    "type": "datetime"
                 }
-            },
-            "created_date": {
-                "type": "date"
-            },
-            "created_time": {
-                "type": "datetime"
             }
         },
         "File": {
-            "szopatas": {
-                "type": "boolean"
+            "fields": {
+                "szopatas": {
+                    "type": "boolean"
+                },
+                "poly": {
+                    "type": {
+                        "$ref": "#/entities/PolyBase"
+                    }
+                }
             }
         },
         "UserListRes": {
-            "items": {
-                "type": {
-                    "listOf": {
-                        "$ref": "#/entities/User"
+            "fields": {
+                "items": {
+                    "type": {
+                        "listOf": {
+                            "$ref": "#/entities/User"
+                        }
                     }
+                }
+            }
+        },
+        "PolyBase": {
+            "polymorph": {
+                "identity": "variant",
+                "mapping": [
+                    {
+                        "id": "pc1",
+                        "$ref": "#/entities/PolyChild1"
+                    },
+                    {
+                        "id": "pc2",
+                        "$ref": "#/entities/PolyChild2"
+                    }
+                ]
+            },
+            "fields": {
+                "variant": {
+                    "type": "string"
+                }
+            }
+        },
+        "PolyChild1": {
+            "fields": {
+                "variant": {
+                    "type": "string"
+                }
+            }
+        },
+        "PolyChild2": {
+            "fields": {
+                "variant": {
+                    "type": "string"
                 }
             }
         }
@@ -143,6 +192,14 @@
                     }
                 }
             ]
+        },
+        "PolyBackend.get": {
+            "params": {},
+            "returns": {
+                "type": {
+                    "$ref": "#/entities/PolyBase"
+                }
+            }
         }
     }
 }

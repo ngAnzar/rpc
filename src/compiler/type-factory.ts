@@ -1,7 +1,7 @@
 import * as fs from "fs-extra"
 import * as path from "path"
 
-import { Type, Type_List, Type_Mapping, Type_Native, Type_Polymorphic, Type_Ref, Type_Tuple, Entity, Type_PolymorphicMap } from "../schema"
+import { Type, Type_List, Type_Mapping, Type_Native, Type_Polymorph, Type_Ref, Type_Tuple, Entity, Type_PolymorphMap } from "../schema"
 import { Compiler } from "./compiler"
 
 
@@ -41,23 +41,8 @@ class _TypeFactory {
     protected _create(comp: Compiler, type: Type): string {
         if (type instanceof Type_List) {
             return this._listFactory(comp, type.itemType)
-            // let itemFactory = this.get(comp, type.itemType)
-            // return this._addFactory(comp, type,
-            //     `    if (obj == null) return null`,
-            //     `    if (!Array.isArray(obj)) { throw new Error('Value must be array') }`,
-            //     `    return obj.map(${itemFactory})`)
         } else if (type instanceof Type_Mapping) {
             return this._mapFactory(comp, type.itemType)
-            // let itemFactory = this.get(comp, type.itemType)
-            // return this._addFactory(comp, type,
-            //     `    if (obj == null) return null`,
-            //     `    let result = {} as any`,
-            //     `    for (const k in obj) {`,
-            //     `        if (obj.hasOwnProperty(k)) {`,
-            //     `            result[k] = ${itemFactory}(obj[k])`,
-            //     `        }`,
-            //     `    }`,
-            //     `    return result`)
         } else if (type instanceof Type_Native) {
             switch (type.name) {
                 case "string": return "String"
@@ -75,58 +60,20 @@ class _TypeFactory {
             throw new Error("Unhandled native type")
         } else if (type instanceof Type_Ref) {
             if (type.referenced instanceof Entity) {
-                this._references[Entity.qname(type.referenced).uid] = type.referenced
-                const qname = Entity.qname(type.referenced)
-                return this._entityFactory(comp, qname.name)
+                if (type.referenced.polymorph) {
+                    return this._polymorphicFactory(comp, type.referenced.polymorph.mapping)
+                } else {
+                    this._references[Entity.qname(type.referenced).uid] = type.referenced
+                    const qname = Entity.qname(type.referenced)
+                    return this._entityFactory(comp, qname.name)
+                }
             } else {
                 return this.get(comp, type.referenced)
             }
         } else if (type instanceof Type_Tuple) {
             return this._tupleFactory(comp, type.items)
-            // let factories = type.items.map((v, i) => `${this.get(comp, v)}(obj[${i}])`)
-            // return this._addFactory(comp, type,
-            //     `    if (obj == null) return null`,
-            //     `    if (!Array.isArray(obj)) { throw new Error('Value must be array') }`,
-            //     `    return [${factories.join(", ")}]`)
-        } else if (type instanceof Type_Polymorphic) {
+        } else if (type instanceof Type_Polymorph) {
             return this._polymorphicFactory(comp, type.mapping)
-            /*
-            let code = [
-                `    if (obj == null) return null`,
-            ]
-
-            let switchField = type.mapping[0].id.fields.length === 1 ? type.mapping[0].id.fields[0] : null
-            if (switchField) {
-                for (const m of type.mapping) {
-                    for (const i of m.id.fields) {
-                        if (switchField !== i) {
-                            switchField = null
-                            break
-                        }
-                    }
-                    if (!switchField) {
-                        break
-                    }
-                }
-            }
-
-            if (switchField) {
-                code.push(`    switch (obj[${JSON.stringify(switchField)}]) {`)
-                for (const m of type.mapping) {
-                    code.push(`        case ${JSON.stringify(m.id.values[0])}: return ${this.get(comp, m.type)}(obj)`)
-                }
-                code.push(`    }`)
-            } else {
-                for (const m of type.mapping) {
-                    let cond = m.id.fields.map((v, i) => `obj[${JSON.stringify(v)}] === ${JSON.stringify(m.id.values[i])}`)
-                    code.push(`    if (${cond.join(" && ")}) {`)
-                    code.push(`        return ${this.get(comp, m.type)}(obj)`)
-                    code.push(`    }`)
-                }
-            }
-
-            return this._addFactory(comp, type, ...code)
-            */
         }
         console.log(type)
         throw new Error("Unhandled type")
@@ -246,7 +193,7 @@ class _TypeFactory {
     }
 
 
-    protected _polymorphicFactory(comp: Compiler, map: Type_PolymorphicMap[]) {
+    protected _polymorphicFactory(comp: Compiler, map: Type_PolymorphMap[]) {
         let useSingleField: string | null = map[0].id.fields.length === 1 ? map[0].id.fields[0] : null
         let factoryMap: string[] = []
         for (const pmap of map) {

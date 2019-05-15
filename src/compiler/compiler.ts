@@ -3,7 +3,7 @@ import * as path from "path"
 
 import {
     registry, Document, Entity, Module,
-    Type, Type_List, Type_Mapping, Type_Native, Type_Polymorphic, Type_Ref, Type_Tuple, QName
+    Type, Type_List, Type_Mapping, Type_Native, Type_Polymorph, Type_Ref, Type_Tuple, QName
 } from "../schema"
 
 import { TypeFactory } from "./type-factory"
@@ -55,7 +55,7 @@ export class Compiler {
             this.importType(type.itemType)
         } else if (type instanceof Type_Native) {
             // pass...
-        } else if (type instanceof Type_Polymorphic) {
+        } else if (type instanceof Type_Polymorph) {
             for (const item of type.mapping) {
                 this.importType(item.type)
             }
@@ -122,6 +122,7 @@ export class Compiler {
     }
 
     public typeAsTs(type: Type): string {
+        console.log("typeAsTs", type)
         this.importType(type)
 
         if (type instanceof Type_List) {
@@ -141,13 +142,17 @@ export class Compiler {
             throw new Error("Unhandled native type")
         } else if (type instanceof Type_Ref) {
             if (type.referenced instanceof Entity) {
-                return this.getEntityName(type.referenced)
+                if (type.referenced.polymorph) {
+                    return this.typeAsTs(type.referenced.polymorph)
+                } else {
+                    return this.getEntityName(type.referenced)
+                }
             } else {
                 return this.typeAsTs(type.referenced)
             }
         } else if (type instanceof Type_Tuple) {
             return `[${type.items.map(v => this.typeAsTs(v)).join(", ")}]`
-        } else if (type instanceof Type_Polymorphic) {
+        } else if (type instanceof Type_Polymorph) {
             return type.mapping.map(v => {
                 let id = {}
                 v.id.fields.forEach((field, i) => {

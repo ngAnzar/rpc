@@ -13,22 +13,31 @@
                 "^[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*$": {
                     "type": "object",
                     "additionalProperties": false,
-                    "patternProperties": {
-                        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                    "properties": {
+                        "polymorph": {
+                            "$ref": "#/definitions/Polymorph"
+                        },
+                        "fields": {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": [
-                                "type"
-                            ],
-                            "properties": {
-                                "type": {
-                                    "$ref": "#/definitions/Type"
-                                },
-                                "summary": {
-                                    "type": "string"
-                                },
-                                "description": {
-                                    "type": "string"
+                            "patternProperties": {
+                                "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "properties": {
+                                        "type": {
+                                            "$ref": "#/definitions/Type"
+                                        },
+                                        "summary": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -184,63 +193,8 @@
                         "listOf": {
                             "$ref": "#/definitions/Type"
                         },
-                        "polymorphic": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                                "identity",
-                                "mapping"
-                            ],
-                            "properties": {
-                                "identity": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    ]
-                                },
-                                "mapping": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "id",
-                                            "$ref"
-                                        ],
-                                        "properties": {
-                                            "id": {
-                                                "oneOf": [
-                                                    {
-                                                        "type": [
-                                                            "string",
-                                                            "integer"
-                                                        ]
-                                                    },
-                                                    {
-                                                        "type": "array",
-                                                        "items": {
-                                                            "type": [
-                                                                "string",
-                                                                "integer"
-                                                            ]
-                                                        }
-                                                    }
-                                                ]
-                                            },
-                                            "$ref": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                        "polymorph": {
+                            "$ref": "#/definitions/Polymorph"
                         }
                     },
                     "additionalProperties": false,
@@ -248,6 +202,64 @@
                     "maxProperties": 1
                 }
             ]
+        },
+        "Polymorph": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "identity",
+                "mapping"
+            ],
+            "properties": {
+                "identity": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ]
+                },
+                "mapping": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                            "id",
+                            "$ref"
+                        ],
+                        "properties": {
+                            "id": {
+                                "oneOf": [
+                                    {
+                                        "type": [
+                                            "string",
+                                            "integer"
+                                        ]
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": [
+                                                "string",
+                                                "integer"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "$ref": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "required": [
