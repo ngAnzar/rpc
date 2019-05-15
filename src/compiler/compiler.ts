@@ -122,7 +122,6 @@ export class Compiler {
     }
 
     public typeAsTs(type: Type): string {
-        console.log("typeAsTs", type)
         this.importType(type)
 
         if (type instanceof Type_List) {
