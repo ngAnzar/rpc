@@ -1,22 +1,13 @@
 import { Compiler } from "./compiler"
-import { Entity, Method, Type_Optional } from "../schema"
+import { Entity, Method, Methods, Type_Optional } from "../schema"
 
 
 
 export function createMethods(comp: Compiler) {
-    let groupByNs = {}
+    const groupByNs = groupMethods(comp.doc.methods)
     let res: string[] = []
-    for (const met of Object.values(comp.doc.methods)) {
-        const ns = met.name.ns ? met.name.ns : ""
 
-        if (!groupByNs[met.name.ns]) {
-            groupByNs[met.name.ns] = {}
-        }
-
-        groupByNs[met.name.ns][met.name.name] = met
-    }
-
-    for (const k of Object.keys(groupByNs).sort((a, b) => a.localeCompare(b))) {
+    for (const k in groupByNs) {
         let isExtension = false
         for (const ent of Object.values(comp.doc.entities)) {
             const qname = Entity.qname(ent)
@@ -26,9 +17,9 @@ export function createMethods(comp: Compiler) {
         }
 
         if (isExtension) {
-            res.push(createExtension(comp, k, Object.values(groupByNs[k])))
+            res.push(createExtension(comp, k, groupByNs[k]))
         } else if (k) {
-            res.push(createMethodsCls(comp, k, Object.values(groupByNs[k])))
+            res.push(createMethodsCls(comp, k, groupByNs[k]))
         } else {
 
         }
@@ -38,9 +29,37 @@ export function createMethods(comp: Compiler) {
 }
 
 
+export function groupMethods(methods: Methods): { [key: string]: Method[] } {
+    let group: { [key: string]: { [key: string]: Method } } = {}
+
+    for (const met of Object.values(methods)) {
+        const ns = met.name.ns ? met.name.ns : ""
+
+        if (!group[ns]) {
+            group[ns] = {}
+        }
+
+        group[ns][met.name.name] = met
+    }
+
+    let res: { [key: string]: Method[] } = {}
+
+    for (const k of Object.keys(group).sort((a, b) => a.localeCompare(b))) {
+        res[k] = Object.values(group[k])
+    }
+
+    return res
+}
+
+
 function createMethodsCls(comp: Compiler, name: string, methods: Method[]): string {
+    let dataSource = createDataSource(comp, name, methods)
     let requirements: string[] = []
     let res = `export class ${name} extends HTTPClient__ {\n`
+
+    if (dataSource) {
+        res += `    public static readonly SOURCE = new InjectionToken<RpcDataSource__<any, ${name}>>("${name}.SOURCE")\n\n`
+    }
 
     for (const met of methods) {
         let map = comp.typeAsFactory(met.returns.type)
@@ -59,7 +78,37 @@ function createMethodsCls(comp: Compiler, name: string, methods: Method[]): stri
         res = requirements.join("\n") + "\n\n" + res
     }
 
-    return res + "}"
+    return res + "}" + (dataSource ? `\n\n${dataSource}` : "")
+}
+
+
+const SOURCE_METHODS = ["search", "get", "save", "remove", "position"]
+
+export function hasDataSource(methods: Method[]): boolean {
+    let found
+    for (const req of SOURCE_METHODS) {
+        found = false
+        for (const met of methods) {
+            if (met.name.name === req) {
+                found = true
+                break
+            }
+        }
+        if (!found) {
+            return false
+        }
+    }
+    return true
+}
+
+
+function createDataSource(comp: Compiler, name: string, methods: Method[]): string | null {
+    if (hasDataSource(methods)) {
+        return `export const ${name}_SOURCE_FACTORY: FactoryProvider = `
+            + `{ provide: ${name}.SOURCE, useFactory: (backend: ${name}) => new RpcDataSource__(backend), deps: [${name}] }`
+    } else {
+        return null
+    }
 }
 
 

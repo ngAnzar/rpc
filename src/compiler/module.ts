@@ -1,6 +1,7 @@
 import fs = require("fs")
 import path = require("path")
 import { Entity, Document } from "../schema";
+import { groupMethods, hasDataSource } from "./methods"
 
 
 
@@ -8,25 +9,6 @@ import { Entity, Document } from "../schema";
 
 export function createModule(outPath: string, documents: Document[], deps: string[]) {
     fs.writeFileSync(outPath, createModuleCode(outPath, documents, deps))
-
-
-    // let tls = Object.values(doc.entities).map(v => Entity.qname(v).tln)
-    //     .concat(Object.values(comp.doc.methods).map(v => v.name.tln))
-    //     .filter((v, i, a) => a.indexOf(v) === i)
-
-    // let provieds = Object.values(comp.doc.entities).map(v => `${Entity.qname(v).tln}.PROVIDE`)
-
-    // let res = [
-    //     `import { Module } from "@angular/core"`,
-    //     //`import { CommonModule } from "@angular/common"`,
-    //     `import { HttpClientModule } from "@angular/common/http"\n`,
-    //     `import { ${tls.join(", ")} } from "./${comp.doc.module.name}"`,
-    //     `export { ${tls.join(", ")} }\n\n`,
-    //     `@Module({ imports: [HttpClientModule], providers: [${provieds.join(", ")}] })`,
-    //     `export class ${comp.doc.module.name}Module {}`
-    // ]
-
-    // return res.join("\n")
 }
 
 
@@ -53,13 +35,22 @@ function createModuleCode(outPath: string, documents: Document[], deps: string[]
 
     for (const doc of documents) {
         let e = getDocumentExports(doc)
+        let methods = groupMethods(doc.methods)
+
+        for (const k in methods) {
+            if (hasDataSource(methods[k])) {
+                provides.push(`${k}_SOURCE_FACTORY`)
+                imports.push(`import { ${k}_SOURCE_FACTORY } from "./${doc.module.name}"  // relative`)
+            }
+        }
+
         imports.push(`import { ${e.join(", ")} } from "./${doc.module.name}"  // relative`)
         exports_ = exports_.concat(e)
 
         let pEnt = Object.values(doc.entities).map(v => Entity.qname(v).tln)
         provides = provides
             .concat(Object.values(doc.entities).map(v => `${Entity.qname(v).fullName}.PROVIDER`))
-            .concat(Object.values(doc.methods).filter(v => pEnt.indexOf(v.name.tln) === -1).map(v => v.name.tln))
+            .concat(Object.keys(methods).filter(v => pEnt.indexOf(v) === -1))
     }
 
     exports_ = exports_.filter((v, i, a) => a.indexOf(v) === i)
