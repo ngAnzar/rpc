@@ -50,6 +50,7 @@ class _TypeFactory {
                 case "number": return "Number"
                 case "boolean": return "Boolean"
                 case "any": return this._anyFactory(comp)
+                case "null": return this._anyFactory(comp)
                 case "date":
                 case "datetime":
                     if (this._dateFactory) {
@@ -58,7 +59,7 @@ class _TypeFactory {
                         return this._dateFactory = this._entityFactory(comp, "Date")
                     }
             }
-            throw new Error("Unhandled native type")
+            throw new Error("Unhandled native type: " + type.name)
         } else if (type instanceof Type_Ref) {
             if (type.referenced instanceof Entity) {
                 if (type.referenced.polymorph) {

@@ -42,11 +42,15 @@ function createMethodsCls(comp: Compiler, name: string, methods: Method[]): stri
     let requirements: string[] = []
     let res = `export class ${name} extends HTTPClient__ {\n`
 
-    //res += `    public constructor(@Inject(HTTPTransport) public readonly transport: Transport) { super() } \n\n`
-
     for (const met of methods) {
+        let map = comp.typeAsFactory(met.returns.type)
+        let options = ""
+        if (map) {
+            options = `, { map: ${map} }`
+        }
+
         res += [
-            `    @Method__(${JSON.stringify(met.name.fullName)})`,
+            `    @Method__(${JSON.stringify(met.name.fullName)}${options})`,
             `    public readonly ${met.name.name}: ${getMethodAsType(comp, requirements, met)}`
         ].join("\n") + "\n"
     }
