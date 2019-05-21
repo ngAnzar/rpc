@@ -218,23 +218,22 @@ export class QName {
 
 
 const ENT_NAME = Symbol("Entity.name")
-const ENT_FIELDS = Symbol("Entity.fields")
+const ENT_DATA = Symbol("Entity.data")
 
 export class Entity {
     public static qname(ent: Entity): QName {
         return ent[ENT_NAME]
     }
 
-    // public static fields(ent: Entity): EntityFields {
-    //     return ent[ENT_FIELDS]
-    // }
+    public static data(ent: Entity): StaticData | null {
+        return ent[ENT_DATA]
+    }
 
     protected [ENT_NAME]: QName
-    // protected [ENT_FIELDS]: EntityFields
+    protected [ENT_DATA]: StaticData
 
     public constructor(name: QName, public readonly fields: EntityFields, public readonly polymorph: Type_Polymorph) {
         this[ENT_NAME] = name
-        // this[ENT_FIELDS] = fields
     }
 }
 
@@ -303,6 +302,12 @@ export class Module {
 }
 
 
+export class StaticData {
+    public constructor(public readonly items: Array<{ [key: string]: any }>) {
+    }
+}
+
+
 export class Document {
     public readonly module: Module
     public readonly entities: Entities = {}
@@ -321,6 +326,9 @@ export class Document {
         }
         if (json.methods) {
             this._convertMethods(json.methods)
+        }
+        if (json.data) {
+            this._convertData(json.data)
         }
     }
 
@@ -369,6 +377,17 @@ export class Document {
             }
 
             this.methods[k] = new Method(name, params, returns, throws)
+        }
+    }
+
+    protected _convertData(data: { [key: string]: any[] }) {
+        for (const entityName in data) {
+            const ent = this.entities[entityName]
+            if (ent) {
+                ent[ENT_DATA] = new StaticData(data[entityName])
+            } else {
+                throw Error("Entity is defined: " + entityName)
+            }
         }
     }
 

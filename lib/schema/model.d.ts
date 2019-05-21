@@ -75,11 +75,14 @@ export declare class QName {
     readonly document: Document;
 }
 declare const ENT_NAME: unique symbol;
+declare const ENT_DATA: unique symbol;
 export declare class Entity {
     readonly fields: EntityFields;
     readonly polymorph: Type_Polymorph;
     static qname(ent: Entity): QName;
+    static data(ent: Entity): StaticData | null;
     protected [ENT_NAME]: QName;
+    protected [ENT_DATA]: StaticData;
     constructor(name: QName, fields: EntityFields, polymorph: Type_Polymorph);
 }
 export declare class EntityField {
@@ -135,6 +138,14 @@ export declare class Module {
     name: string;
     constructor(parent: string, name: string);
 }
+export declare class StaticData {
+    readonly items: Array<{
+        [key: string]: any;
+    }>;
+    constructor(items: Array<{
+        [key: string]: any;
+    }>);
+}
 export declare class Document {
     private readonly reg;
     readonly module: Module;
@@ -148,6 +159,9 @@ export declare class Document {
     }): void;
     protected _convertMethods(mets: {
         [key: string]: any;
+    }): void;
+    protected _convertData(data: {
+        [key: string]: any[];
     }): void;
     protected _type(t: any): Type;
     protected _resolveType(): void;

@@ -16,6 +16,12 @@ export function createEntityCode(comp: Compiler, ent: Entity): string {
     let res = `export class ${Entity.qname(ent).name} extends Entity__ {\n`
     res += `    public static readonly CLASS = new InjectionToken("${Entity.qname(ent).name}Class")\n`
     res += `    public static readonly PROVIDER: FactoryProvider = { provide: ${Entity.qname(ent).name}.CLASS, useFactory: ${Entity.qname(ent).name}.factory, deps: [HTTPClient__] }\n`
+
+    let staticData = Entity.data(ent)
+    if (staticData) {
+        res += `    public static readonly DATA: StaticSource__<${Entity.qname(ent).name}> = new StaticSource__(${Entity.qname(ent).name}, ${JSON.stringify(staticData.items)} as any)\n`
+    }
+
     const fields = ent.fields
     for (const f in fields) {
         res += createFieldCode(comp, fields[f]) + "\n"
