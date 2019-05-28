@@ -7,12 +7,12 @@ import { groupMethods, hasDataSource } from "./methods"
 
 
 
-export function createModule(outPath: string, documents: Document[], deps: string[]) {
-    fs.writeFileSync(outPath, createModuleCode(outPath, documents, deps))
+export function createModule(outPath: string, documents: Document[], deps: string[], generatedModule: string) {
+    fs.writeFileSync(outPath, createModuleCode(outPath, documents, deps, generatedModule))
 }
 
 
-function createModuleCode(outPath: string, documents: Document[], deps: string[]): string {
+function createModuleCode(outPath: string, documents: Document[], deps: string[], generatedModule: string): string {
     let imports = [
         `import { NgModule } from "@angular/core"`
     ]
@@ -33,6 +33,13 @@ function createModuleCode(outPath: string, documents: Document[], deps: string[]
         return `import { ${name} } from "${pth}"  // dependency`
     }))
 
+    let generatedImportPth = path.relative(path.dirname(outPath), generatedModule)
+        .replace(/\.[tj]s$/, "")
+        .replace(/[\\\/]+/g, "/")
+    if (!generatedImportPth.startsWith(".")) {
+        generatedImportPth = "./" + generatedImportPth
+    }
+
     for (const doc of documents) {
         let e = getDocumentExports(doc)
         let methods = groupMethods(doc.methods)
@@ -40,11 +47,11 @@ function createModuleCode(outPath: string, documents: Document[], deps: string[]
         for (const k in methods) {
             if (hasDataSource(methods[k])) {
                 provides.push(`${k}_SOURCE_FACTORY`)
-                imports.push(`import { ${k}_SOURCE_FACTORY } from "./${doc.module.name}"  // relative`)
+                imports.push(`import { ${k}_SOURCE_FACTORY } from "${generatedImportPth}"`)
             }
         }
 
-        imports.push(`import { ${e.join(", ")} } from "./${doc.module.name}"  // relative`)
+        imports.push(`import { ${e.join(", ")} } from "${generatedImportPth}"`)
         exports_ = exports_.concat(e)
 
         let pEnt = Object.values(doc.entities).map(v => Entity.qname(v).tln)
@@ -80,6 +87,6 @@ function getDocumentExports(doc: Document): string[] {
 
 
 function getModuleName(outPath: string): string {
-    let name = path.basename(path.dirname(outPath))
-    return `${name.charAt(0).toUpperCase()}${name.slice(1)}Module`
+    let name = path.basename(outPath).split(".")[0]
+    return `${name.charAt(0).toUpperCase()}${name.slice(1)}Api`
 }

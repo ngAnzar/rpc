@@ -14,6 +14,7 @@ declare class _TypeFactory {
     protected _dateFactory: string;
     get(comp: Compiler, type: Type): string;
     emit(filePath: string): void;
+    renderBody(): string;
     protected _create(comp: Compiler, type: Type): string;
     protected _addFactory(comp: Compiler, type: Type, ...content: string[]): string;
     protected _asFunction(comp: Compiler, type: Type, content: string[]): {

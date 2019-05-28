@@ -2,7 +2,7 @@ import {
     Entity, EntityField,
     Type, Type_List, Type_Mapping, Type_Native, Type_Polymorph, Type_Ref, Type_Tuple
 } from "../schema"
-import { Compiler } from "./compiler"
+import { Compiler, RenderedBlock } from "./compiler"
 
 
 /**
@@ -12,7 +12,9 @@ import { Compiler } from "./compiler"
  */
 
 
-export function createEntityCode(comp: Compiler, ent: Entity): string {
+export function createEntityCode(comp: Compiler, ent: Entity): RenderedBlock {
+    let rendered = comp.newBlock(Entity.qname(ent))
+
     let res = `export class ${Entity.qname(ent).name} extends Entity__ {\n`
     res += `    public static readonly CLASS = new InjectionToken("${Entity.qname(ent).name}Class")\n`
     res += `    public static readonly PROVIDER: FactoryProvider = { provide: ${Entity.qname(ent).name}.CLASS, useFactory: ${Entity.qname(ent).name}.factory, deps: [HTTPClient__] }\n`
@@ -27,7 +29,8 @@ export function createEntityCode(comp: Compiler, ent: Entity): string {
         res += createFieldCode(comp, fields[f]) + "\n"
     }
     res += `}\n`
-    return res
+    rendered.content = res
+    return rendered
 }
 
 

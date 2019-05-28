@@ -35,6 +35,8 @@ export function Method(name: string, options: MethodOptions = {}) {
             return null
         }
 
+        console.log(name, options)
+
         target[propertyKey] = map_
             ? function (this: Client, params: { [key: string]: any }): any {
                 return this.transport.call(action_, params, lf(this)).pipe(map(map_))

@@ -15,6 +15,7 @@ export class Compiler {
     protected imports: { [key: string]: { qname: QName, alias: string } } = {}
     protected _factories: string[] = []
     protected _deps: string[] = []
+    protected _currentBlock: RenderedBlock
 
     public constructor(public readonly doc: Document) {
 
@@ -22,31 +23,47 @@ export class Compiler {
 
     public get deps() { return this._deps }
 
-    public emit(filePath: string, factoryPath: string) {
-        fs.mkdirpSync(path.dirname(filePath))
+    // public emit(filePath: string, factoryPath: string) {
+    //     fs.mkdirpSync(path.dirname(filePath))
 
-        let entities: string = this.renderEntities()
-        let methods: string = this.renderMethods()
-        let content = this.renderImports(filePath, factoryPath)
+    //     let entities: string = this.renderEntities()
+    //     let methods: string = this.renderMethods()
+    //     let content = this.renderImports(filePath, factoryPath)
 
-        if (entities && entities.length) {
-            content += "\n\n"
-                + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
-                + `/*                       ENTITIES                        */\n`
-                + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
-                + entities
-        }
+    //     if (entities && entities.length) {
+    //         content += "\n\n"
+    //             + renderBlockComment(`ENTITIES`)
+    //             + entities
+    //     }
 
-        if (methods && methods.length) {
-            content += "\n\n"
-                + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
-                + `/*                        METHODS                        */\n`
-                + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
-                + methods
-        }
+    //     if (methods && methods.length) {
+    //         content += "\n\n"
+    //             + renderBlockComment(`METHODS`)
+    //             + methods
+    //     }
 
-        fs.writeFileSync(filePath, content + "\n")
-    }
+    //     fs.writeFileSync(filePath, content + "\n")
+    // }
+
+    // public renderBody(commentPrefix: string) {
+    //     let entities: string = this.renderEntities()
+    //     let methods: string = this.renderMethods()
+    //     let content = ""
+
+    //     if (entities && entities.length) {
+    //         content += "\n\n"
+    //             + renderBlockComment(`${commentPrefix}ENTITIES`)
+    //             + entities
+    //     }
+
+    //     if (methods && methods.length) {
+    //         content += "\n\n"
+    //             + renderBlockComment(`${commentPrefix}METHODS`)
+    //             + methods
+    //     }
+
+    //     return content
+    // }
 
     public importType(type: Type) {
         if (type instanceof Type_List) {
@@ -185,6 +202,7 @@ export class Compiler {
         let exists = Object.values(this.doc.entities)
             .filter(v => Entity.qname(v).uid === qname.uid)
 
+        this._currentBlock.addDep(qname)
         if (exists.length === 0) {
             const alias = this._getUniqueImportName(qname)
             this.imports[qname.uid] = { qname, alias }
@@ -199,14 +217,18 @@ export class Compiler {
         return `anzar_temp_${this._tempVarIdx++}`
     }
 
-    protected renderEntities(): string {
+    public renderEntities(): RenderedBlock[] {
         return Object.values(this.doc.entities).map(ent => {
             return createEntityCode(this, ent)
-        }).join("\n\n\n")
+        })
     }
 
-    protected renderMethods(): string {
+    public renderMethods(): RenderedBlock[] {
         return createMethods(this)
+    }
+
+    public newBlock(qname: QName): RenderedBlock {
+        return this._currentBlock = new RenderedBlock(qname)
     }
 
     protected renderImports(selfPath: string, factoryPath: string): string {
@@ -282,5 +304,30 @@ export class Compiler {
         }
 
         return res.join("\n")
+    }
+}
+
+
+export function renderBlockComment(text: string) {
+    let start = 76 / 2 + Math.floor(text.length / 2)
+    return `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
+        + `/*${text.padStart(start, " ").padEnd(76, " ")}*/\n`
+        + `/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/\n`
+}
+
+
+export class RenderedBlock {
+    public readonly deps: string[] = []
+    public readonly qname: string
+    public content: string
+    public constructor(qname: QName) {
+        this.qname = `${qname.file}/#${qname.fullName}`
+    }
+
+    public addDep(qname: QName) {
+        let value = `${qname.file}/#${qname.fullName}`
+        if (this.deps.indexOf(value) === -1) {
+            this.deps.push(value)
+        }
     }
 }

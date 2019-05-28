@@ -1,11 +1,11 @@
-import { Compiler } from "./compiler"
-import { Entity, Method, Methods, Type_Optional } from "../schema"
+import { Compiler, RenderedBlock } from "./compiler"
+import { Entity, Method, Methods, Type_Optional, QName } from "../schema"
 
 
 
-export function createMethods(comp: Compiler) {
+export function createMethods(comp: Compiler): RenderedBlock[] {
     const groupByNs = groupMethods(comp.doc.methods)
-    let res: string[] = []
+    let res: RenderedBlock[] = []
 
     for (const k in groupByNs) {
         let isExtension = false
@@ -25,7 +25,7 @@ export function createMethods(comp: Compiler) {
         }
     }
 
-    return res.join("\n\n\n")
+    return res
 }
 
 
@@ -52,7 +52,8 @@ export function groupMethods(methods: Methods): { [key: string]: Method[] } {
 }
 
 
-function createMethodsCls(comp: Compiler, name: string, methods: Method[]): string {
+function createMethodsCls(comp: Compiler, name: string, methods: Method[]): RenderedBlock {
+    let rendered = comp.newBlock(new QName(comp.doc.path, "/methods/", name))
     let dataSource = createDataSource(comp, name, methods)
     let requirements: string[] = []
     let res = `export class ${name} extends HTTPClient__ {\n`
@@ -78,7 +79,8 @@ function createMethodsCls(comp: Compiler, name: string, methods: Method[]): stri
         res = requirements.join("\n") + "\n\n" + res
     }
 
-    return res + "}" + (dataSource ? `\n\n${dataSource}` : "")
+    rendered.content = res + "}" + (dataSource ? `\n\n${dataSource}` : "")
+    return rendered
 }
 
 
@@ -112,7 +114,8 @@ function createDataSource(comp: Compiler, name: string, methods: Method[]): stri
 }
 
 
-function createExtension(comp: Compiler, name: string, methods: Method[]): string {
+function createExtension(comp: Compiler, name: string, methods: Method[]): RenderedBlock {
+    let rendered = comp.newBlock(new QName(comp.doc.path, "/methods/", name))
     let requirements: string[] = []
     let res = `export namespace ${name} {\n`
 
@@ -128,7 +131,10 @@ function createExtension(comp: Compiler, name: string, methods: Method[]): strin
         res = requirements.join("\n") + "\n\n" + res
     }
 
-    return res + `}`
+    res += `}`
+
+    rendered.content = res
+    return rendered
 }
 
 

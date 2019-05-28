@@ -4,6 +4,7 @@ import { registry } from "../schema"
 import { Compiler } from "./compiler"
 import { TypeFactory } from "./type-factory"
 import { createModule } from "./module"
+import { FlatCompiler } from "./flat_compiler"
 
 
 export interface CompileOptions {
@@ -26,10 +27,11 @@ export class CompileSession {
 
 export function compile(files: string[], options: CompileOptions) {
     const session = new CompileSession(options)
-    const factoryPath = path.join(session.helperPath, TypeFactory.name) + ".ts"
+    const outputPath = path.join(session.helperPath, "__anzar_rpc_output.ts")
     const emitted: { [key: string]: any } = {}
     const documentsByModule: { [key: string]: any } = {}
     const depsByModule: string[] = []
+    const flatCompiler = new FlatCompiler()
 
     while (files.length) {
         const file = files.shift() as string
@@ -40,7 +42,8 @@ export function compile(files: string[], options: CompileOptions) {
         if (!emitted[doc.outPath]) {
             emitted[doc.outPath] = true
 
-            comp.emit(doc.outPath, factoryPath)
+            // comp.emit(doc.outPath, factoryPath)
+            flatCompiler.addCompiler(comp)
 
             files = files.concat(comp.deps)
             if (!documentsByModule[doc.module.parent]) {
@@ -55,13 +58,15 @@ export function compile(files: string[], options: CompileOptions) {
         }
     }
 
+    flatCompiler.emit(outputPath)
+
     for (const k in documentsByModule) {
-        const indexFile = path.join(session.outPath, k, "index.ts")
+        const indexFile = path.join(session.outPath, `${k}.api.ts`)
         const deps = depsByModule[k]
+            .map(v => `${session.outPath}/${v.module.parent}.api.ts`)
             .filter((v, i, a) => a.indexOf(v) === i)
-            .map(v => registry.get(v).outPath)
-        createModule(indexFile, Object.values(documentsByModule[k]), deps)
+        createModule(indexFile, Object.values(documentsByModule[k]), deps, outputPath)
     }
 
-    TypeFactory.emit(factoryPath)
+    // TypeFactory.emit(factoryPath)
 }

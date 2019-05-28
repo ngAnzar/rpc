@@ -29,13 +29,21 @@ class _TypeFactory {
         fs.mkdirpSync(path.dirname(filePath))
 
         let content =
-            this._renderImports(filePath)
-            + "\n\n\n"
-            + Object.values(this._helpers).join("\n")
+            Object.values(this._helpers).join("\n")
             + "\n\n\n"
             + Object.values(this._factories).join("\n")
+            + "\n\n\n"
+            + "// XXX: Avoid recursive imports\n"
+            + this._renderImports(filePath)
 
         fs.writeFileSync(filePath, content)
+    }
+
+    public renderBody() {
+        return Object.values(this._helpers).join("\n")
+            + "\n\n\n"
+            + Object.values(this._factories).join("\n")
+            + "\n\n\n"
     }
 
     protected _create(comp: Compiler, type: Type): string {
@@ -99,15 +107,34 @@ class _TypeFactory {
     }
 
     protected _renderImports(selfPath: string) {
-        return Object.values(this._references).map(ent => {
+        let idx = 0
+        let groups: { [key: string]: { names: string[], alias: string } } = {}
+        let res = ""
+
+
+        Object.values(this._references).map(ent => {
             let pth = path.relative(path.dirname(selfPath), Entity.qname(ent).document.outPath)
                 .replace(/\.[tj]s$/, "")
                 .replace(/[\\\/]+/g, "/")
             if (!pth.startsWith(".")) {
                 pth = "./" + pth
             }
-            return `import { ${Entity.qname(ent).name} } from "${pth}"`
-        }).join("\n")
+
+            if (pth in groups) {
+                groups[pth].names.push(Entity.qname(ent).name)
+            } else {
+                groups[pth] = {
+                    names: [Entity.qname(ent).name],
+                    alias: `__dep${++idx}`
+                }
+            }
+        })
+
+        for (const pth in groups) {
+            res += `import { ${groups[pth].names.join(', ')} } from "${pth}"\n`
+        }
+
+        return res
     }
 
 
@@ -138,7 +165,7 @@ class _TypeFactory {
         }
 
         let facName = this.name + (Object.values(this._factories).length + 1)
-        this._factories[facName] = `export const ${facName} = (obj: any) => __newEntity(${name}, obj)`
+        this._factories[facName] = `const ${facName} = (obj: any) => __newEntity(${name}, obj)`
         return facName
     }
 
@@ -162,7 +189,7 @@ class _TypeFactory {
 
         let itemFactory = this.get(comp, itemType)
         let facName = this.name + (Object.values(this._factories).length + 1)
-        this._factories[facName] = `export const ${facName} = (obj: any) => __newList(${itemFactory}, obj)`
+        this._factories[facName] = `const ${facName} = (obj: any) => __newList(${itemFactory}, obj)`
         return facName
     }
 
@@ -185,7 +212,7 @@ class _TypeFactory {
 
         let itemFactory = this.get(comp, itemType)
         let facName = this.name + (Object.values(this._factories).length + 1)
-        this._factories[facName] = `export const ${facName} = (obj: any) => __newMapping(${itemFactory}, obj)`
+        this._factories[facName] = `const ${facName} = (obj: any) => __newMapping(${itemFactory}, obj)`
         return facName
     }
 
@@ -210,7 +237,7 @@ class _TypeFactory {
 
         let factories = itemTypes.map(v => this.get(comp, v))
         let facName = this.name + (Object.values(this._factories).length + 1)
-        this._factories[facName] = `export const ${facName} = (obj: any) => __newTuple(${factories.join(", ")}, obj)`
+        this._factories[facName] = `const ${facName} = (obj: any) => __newTuple(${factories.join(", ")}, obj)`
         return facName
     }
 
@@ -230,7 +257,7 @@ class _TypeFactory {
 
         if (useSingleField) {
             let facName = this.name + (Object.values(this._factories).length + 1)
-            this._factories[facName] = `export const ${facName} = (obj: any) => ${mapName}[obj[${JSON.stringify(useSingleField)}]](obj)`
+            this._factories[facName] = `const ${facName} = (obj: any) => ${mapName}[obj[${JSON.stringify(useSingleField)}]](obj)`
             return facName
         } else {
             throw new Error("TODO: multi field polymorphic mapping")
@@ -240,7 +267,7 @@ class _TypeFactory {
     protected _optionalFactory(comp: Compiler, itemType: Type): string {
         let itemFactory = this.get(comp, itemType)
         let facName = this.name + (Object.values(this._factories).length + 1)
-        this._factories[facName] = `export const ${facName} = (obj: any) => obj == null ? null : ${itemFactory}(obj)`
+        this._factories[facName] = `const ${facName} = (obj: any) => obj == null ? null : ${itemFactory}(obj)`
         return facName
     }
 }

@@ -9,9 +9,9 @@ export declare class Compiler {
     };
     protected _factories: string[];
     protected _deps: string[];
+    protected _currentBlock: RenderedBlock;
     constructor(doc: Document);
     readonly deps: string[];
-    emit(filePath: string, factoryPath: string): void;
     importType(type: Type): void;
     protected _getUniqueImportName(qname: QName): string;
     typeAsTs(type: Type): string;
@@ -20,7 +20,16 @@ export declare class Compiler {
     protected _getQNameLocalName(qname: QName): string;
     protected _tempVarIdx: number;
     protected _tempVar(): string;
-    protected renderEntities(): string;
-    protected renderMethods(): string;
+    renderEntities(): RenderedBlock[];
+    renderMethods(): RenderedBlock[];
+    newBlock(qname: QName): RenderedBlock;
     protected renderImports(selfPath: string, factoryPath: string): string;
+}
+export declare function renderBlockComment(text: string): string;
+export declare class RenderedBlock {
+    readonly deps: string[];
+    readonly qname: string;
+    content: string;
+    constructor(qname: QName);
+    addDep(qname: QName): void;
 }
