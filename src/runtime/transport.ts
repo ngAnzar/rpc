@@ -65,6 +65,7 @@ export class HTTPTransport extends Transport {
                 const trans = this.transactions[item.id]
                 if (trans) {
                     this._updateTrans(trans, item)
+                    delete this.transactions[item.id]
                 } else if (!trans) { // TODO: dev only
                     throw new RpcError(`Transaction not found for ${item.id}`, RpcError.SYSTEM_ERROR)
                 }
