@@ -1,21 +1,43 @@
 import { InjectionToken, Inject } from "@angular/core"
 import { HttpClient, HttpHeaders } from "@angular/common/http"
-import { Observable } from "rxjs"
+import { Observable, race } from "rxjs"
 import { share, takeUntil } from "rxjs/operators"
 
 import { Transaction, RequestMeta, RpcError } from "./transaction"
 
 
 export abstract class Transport {
+    public readonly packingTime: number = 50
     protected nextId: number = 1
     protected transactions: { [key: number]: Transaction<any> } = {}
+
+    protected pending: Array<Transaction<any>> = []
+    protected packingTimeout: any
+
 
     public call(name: string, params: { [key: string]: any }, meta?: RequestMeta): Observable<any> {
         const trans = new Transaction(this.nextId++, name, params, meta)
         this.transactions[trans.id] = trans
+
         return new Observable(observer => {
             let s = trans.progress.subscribe(observer)
-            this._send(trans)
+
+            if (this.packingTime) {
+                this.pending.push(trans)
+
+                if (!this.packingTimeout) {
+                    this.packingTimeout = setTimeout(() => {
+                        let toSend = this.pending.slice()
+                        this.pending.length = 0
+                        clearTimeout(this.packingTimeout)
+                        delete this.packingTimeout
+                        this._send(toSend)
+                    }, this.packingTime)
+                }
+            } else {
+                this._send([trans])
+            }
+
             return () => {
                 if (!trans.isCompleted) {
                     trans.progress.complete()
@@ -26,9 +48,9 @@ export abstract class Transport {
         }).pipe(share())
     }
 
-    protected abstract _send(trans: Transaction<any>): void;
+    protected abstract _send(trans: Array<Transaction<any>>): void
 
-    protected abstract _cancel(trans: Transaction<any>): void;
+    protected abstract _cancel(trans: Transaction<any>): void
 }
 
 
@@ -41,14 +63,28 @@ export class HTTPTransport extends Transport {
         super()
     }
 
-    protected _send(trans: Transaction<any>) {
-        const data = this._render(trans)
+    // protected _send(trans: Transaction<any>) {
+    //     const data = this._render(trans)
+    //     const headers = new HttpHeaders({
+    //         "Content-Type": "application/json"
+    //     })
+
+    //     this.http.post(this.endpoint, JSON.stringify(data), { headers, withCredentials: true })
+    //         .pipe(takeUntil(trans.progress))
+    //         .subscribe(success => {
+    //             let body: any[] = Array.isArray(success) ? success : [success]
+    //             this._handleResponse(body)
+    //         })
+    // }
+
+    protected _send(trans: Array<Transaction<any>>): void {
+        const data = trans.map(t => this._render(t))
         const headers = new HttpHeaders({
             "Content-Type": "application/json"
         })
 
         this.http.post(this.endpoint, JSON.stringify(data), { headers, withCredentials: true })
-            .pipe(takeUntil(trans.progress))
+            .pipe(takeUntil(race(trans.map(t => t.progress))))
             .subscribe(success => {
                 let body: any[] = Array.isArray(success) ? success : [success]
                 this._handleResponse(body)
