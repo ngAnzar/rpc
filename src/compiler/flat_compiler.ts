@@ -9,7 +9,7 @@ export class FlatCompiler {
     protected compilers: Compiler[] = []
     protected blocks: { [key: string]: RenderedBlock } = {}
     protected commonImports: string = [
-        `import { FactoryProvider, InjectionToken } from "@angular/core"`,
+        `import { FactoryProvider, InjectionToken, Inject } from "@angular/core"`,
         `import { Observable } from "rxjs"`,
         `import { Entity as Entity__, Field as Field__, Method as Method__, HTTPClient as HTTPClient__, RpcDataSource as RpcDataSource__, StaticSource as StaticSource__ } from "@anzar/rpc"`
     ].join("\n")

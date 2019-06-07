@@ -46,8 +46,9 @@ function createModuleCode(outPath: string, documents: Document[], deps: string[]
 
         for (const k in methods) {
             if (hasDataSource(methods[k])) {
-                provides.push(`${k}_SOURCE_FACTORY`)
-                imports.push(`import { ${k}_SOURCE_FACTORY } from "${generatedImportPth}"`)
+                provides.push(`${k}Source`)
+                // imports.push(`import { ${k}Source } from "${generatedImportPth}"`)
+                e.push(`${k}Source`)
             }
         }
 
