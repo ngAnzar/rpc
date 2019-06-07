@@ -113,9 +113,6 @@ function createDataSource(comp: Compiler, name: string, methods: Method[]): stri
             `    }`,
             `}`
         ].join("\n")
-
-        return `export const ${name}_SOURCE_FACTORY: FactoryProvider = `
-            + `{ provide: ${name}.SOURCE, useFactory: (backend: ${name}) => new RpcDataSource__(backend), deps: [${name}] }`
     } else {
         return null
     }
@@ -156,8 +153,6 @@ function getMethodAsType(comp: Compiler, requirements: string[], met: Method, rs
         } else {
             params.push(`${name}: ${comp.typeAsTs(param.type)}`)
         }
-
-
     }
 
     if (params.length) {
@@ -168,8 +163,8 @@ function getMethodAsType(comp: Compiler, requirements: string[], met: Method, rs
             `}`
         ].join("\n"))
 
-        return `(params: ${safeName}_Params)${rs} Observable<${comp.typeAsTs(met.returns.type)}>`
+        return `(params: ${safeName}_Params, meta?: Meta__<any>)${rs} Observable<${comp.typeAsTs(met.returns.type)}>`
     } else {
-        return `()${rs} Observable<${comp.typeAsTs(met.returns.type)}>`
+        return `(meta?: Meta__<any>)${rs} Observable<${comp.typeAsTs(met.returns.type)}>`
     }
 }

@@ -1,4 +1,9 @@
-import { Observable, Subject } from "rxjs"
+import { Subject } from "rxjs"
+
+import { Meta } from "@anzar/core/data.module"
+
+
+export type RequestMeta<T = any> = Meta<T>
 
 
 export class Transaction<T> {
@@ -38,11 +43,6 @@ export class Transaction<T> {
 
 
 export type LoadFields = "*" | Array<string | { [key: string]: LoadFields }>
-
-
-export interface RequestMeta {
-    loadFields: { [key: string]: LoadFields }
-}
 
 
 export interface Request {

@@ -11,7 +11,7 @@ export class FlatCompiler {
     protected commonImports: string = [
         `import { FactoryProvider, InjectionToken, Inject } from "@angular/core"`,
         `import { Observable } from "rxjs"`,
-        `import { Entity as Entity__, Field as Field__, Method as Method__, HTTPClient as HTTPClient__, RpcDataSource as RpcDataSource__, StaticSource as StaticSource__ } from "@anzar/rpc"`
+        `import { Entity as Entity__, Field as Field__, Method as Method__, HTTPClient as HTTPClient__, RpcDataSource as RpcDataSource__, StaticSource as StaticSource__, RequestMeta as Meta__ } from "@anzar/rpc"`
     ].join("\n")
 
     public constructor() {
