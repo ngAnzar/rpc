@@ -58,7 +58,12 @@ export class FlatCompiler {
         }
 
         for (let dep of block.deps) {
-            if (res.indexOf(dep) === -1) {
+            let didx = res.indexOf(dep)
+            if (didx === -1) {
+                res.splice(idx, 0, dep)
+                this.addToDeps(this.blocks[dep], res)
+            } else if (didx > idx) {
+                res.splice(didx, 1)
                 res.splice(idx, 0, dep)
                 this.addToDeps(this.blocks[dep], res)
             }
