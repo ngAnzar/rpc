@@ -71,28 +71,28 @@ export class RpcError extends Error {
     public static readonly TRANSPORT_ERROR = -32300
 
     public constructor(
-        public readonly _message: string,
+        public readonly message: string,
         public readonly code: number,
         public readonly data?: any) {
         super()
 
-        let type, tb
+        // let type, tb
 
-        if (data) {
-            type = data.type
-            tb = data.traceback
-        } else {
+        // if (data) {
+        //     type = data.type
+        //     tb = data.traceback
+        // } else {
 
-        }
+        // }
 
-        if (tb) {
-            this.message = tb.join("\n")
-        } else {
-            if (type) {
-                this.message = `${type}: ${_message}`
-            } else {
-                this.message = _message
-            }
-        }
+        // if (tb) {
+        //     this.message = tb.join("\n")
+        // } else {
+        //     if (type) {
+        //         this.message = `${type}: ${_message}`
+        //     } else {
+        //         this.message = _message
+        //     }
+        // }
     }
 }
