@@ -181,6 +181,7 @@
                         "string",
                         "date",
                         "datetime",
+                        "time",
                         "any"
                     ]
                 },

@@ -12,6 +12,7 @@ declare class _TypeFactory {
         [key: string]: string;
     };
     protected _dateFactory: string;
+    protected _timeFactory: string;
     get(comp: Compiler, type: Type): string;
     emit(filePath: string): void;
     renderBody(): string;

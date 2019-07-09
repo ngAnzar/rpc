@@ -15,6 +15,7 @@ class _TypeFactory {
     protected _references: { [key: string]: Entity } = {}
     protected _helpers: { [key: string]: string } = {}
     protected _dateFactory: string
+    protected _timeFactory: string
 
     public get(comp: Compiler, type: Type): string {
         let factory = CACHE[type.uid]
@@ -65,6 +66,12 @@ class _TypeFactory {
                         return this._dateFactory
                     } else {
                         return this._dateFactory = this._entityFactory(comp, "Date")
+                    }
+                case "time":
+                    if (this._timeFactory) {
+                        return this._timeFactory
+                    } else {
+                        return this._timeFactory = this._entityFactory(comp, "Time")
                     }
             }
             throw new Error("Unhandled native type: " + type.name)

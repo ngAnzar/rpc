@@ -156,6 +156,7 @@ export class Compiler {
                 case "number": return "number"
                 case "date": return "Date"
                 case "datetime": return "Date"
+                case "time": return "Time"
                 case "any": return "any"
             }
             throw new Error("Unhandled native type")
@@ -270,7 +271,7 @@ export class Compiler {
         let res: string[] = [
             `import { FactoryProvider, InjectionToken, Inject } from "@angular/core"`,
             `import { Observable } from "rxjs"`,
-            `import { Entity as Entity__, Field as Field__, Method as Method__, HTTPClient as HTTPClient__, RpcDataSource as RpcDataSource__, StaticSource as StaticSource__ } from "@anzar/rpc"`
+            `import { Entity as Entity__, Field as Field__, Method as Method__, HTTPClient as HTTPClient__, RpcDataSource as RpcDataSource__, StaticSource as StaticSource__, Time } from "@anzar/rpc"`
         ]
 
         for (const impFrom in groupByModule) {
