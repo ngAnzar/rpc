@@ -264,7 +264,7 @@ class _TypeFactory {
 
         if (useSingleField) {
             let facName = this.name + (Object.values(this._factories).length + 1)
-            this._factories[facName] = `const ${facName} = (obj: any) => ${mapName}[obj[${JSON.stringify(useSingleField)}]](obj)`
+            this._factories[facName] = `const ${facName} = (obj: any) => (${mapName} as any)[obj[${JSON.stringify(useSingleField)}]](obj)`
             return facName
         } else {
             throw new Error("TODO: multi field polymorphic mapping")
