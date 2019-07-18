@@ -79,11 +79,12 @@ declare const ENT_DATA: unique symbol;
 export declare class Entity {
     readonly fields: EntityFields;
     readonly polymorph: Type_Polymorph;
+    readonly primaryKey: string[];
     static qname(ent: Entity): QName;
     static data(ent: Entity): StaticData | null;
     protected [ENT_NAME]: QName;
     protected [ENT_DATA]: StaticData;
-    constructor(name: QName, fields: EntityFields, polymorph: Type_Polymorph);
+    constructor(name: QName, fields: EntityFields, polymorph: Type_Polymorph, primaryKey: string[]);
 }
 export declare class EntityField {
     name: string;

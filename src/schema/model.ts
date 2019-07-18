@@ -232,7 +232,11 @@ export class Entity {
     protected [ENT_NAME]: QName
     protected [ENT_DATA]: StaticData
 
-    public constructor(name: QName, public readonly fields: EntityFields, public readonly polymorph: Type_Polymorph) {
+    public constructor(
+        name: QName,
+        public readonly fields: EntityFields,
+        public readonly polymorph: Type_Polymorph,
+        public readonly primaryKey: string[]) {
         this[ENT_NAME] = name
     }
 }
@@ -350,7 +354,7 @@ export class Document {
                 poly = this._type({ polymorph: entity.polymorph })
             }
 
-            this.entities[k] = new Entity(name, fields, poly)
+            this.entities[k] = new Entity(name, fields, poly, entity.primaryKey)
         }
     }
 

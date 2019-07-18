@@ -18,6 +18,12 @@
                         "polymorph": {
                             "$ref": "#/definitions/Polymorph"
                         },
+                        "primaryKey": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
                         "fields": {
                             "type": "object",
                             "additionalProperties": false,
