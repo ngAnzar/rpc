@@ -181,7 +181,6 @@ class _TypeFactory {
         if (!this._helpers["__newList"]) {
             this._helpers["__newList"] = [
                 `function __newList<T>(factory: (obj: any) => T, obj: any): T[] {`,
-                `    if (obj == null) return null`,
                 `    if (!Array.isArray(obj)) { throw new Error('Value must be array') }`,
                 `    const length = obj.length`,
                 `    const result = new Array(length)`,
@@ -202,17 +201,20 @@ class _TypeFactory {
 
 
     protected _mapFactory(comp: Compiler, itemType: Type): string {
+        if (itemType instanceof Type_Native && itemType.name === "any") {
+            return this._anyFactory(comp)
+        }
+
         if (!this._helpers["__newMapping"]) {
             this._helpers["__newMapping"] = [
                 `function __newMapping<T>(factory: (obj: any) => T, obj: any): { [key: string]: T } {`,
-                `    if (obj == null) return null`,
                 `    return new function() {`,
                 `        for (const k in obj) {`,
                 `            if (obj.hasOwnProperty(k)) {`,
                 `                this[k] = factory(obj[k])`,
                 `            }`,
                 `        }`,
-                `    }`,
+                `    } as any`,
                 `}`
             ].join("\n")
         }
