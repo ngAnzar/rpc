@@ -145,6 +145,7 @@ function createExtension(comp: Compiler, name: string, methods: Method[]): Rende
 
 function getMethodAsType(comp: Compiler, requirements: string[], met: Method, rs: string = " =>"): string {
     let params: string[] = []
+    let allParamsOptional = true
 
     for (const name in met.params) {
         const param = met.params[name]
@@ -152,6 +153,7 @@ function getMethodAsType(comp: Compiler, requirements: string[], met: Method, rs
             params.push(`${name}?: ${comp.typeAsTs(param.type.itemType)}`)
         } else {
             params.push(`${name}: ${comp.typeAsTs(param.type)}`)
+            allParamsOptional = false
         }
     }
 
@@ -163,7 +165,7 @@ function getMethodAsType(comp: Compiler, requirements: string[], met: Method, rs
             `}`
         ].join("\n"))
 
-        return `(params: ${safeName}_Params, meta?: Meta__<any>)${rs} Observable<${comp.typeAsTs(met.returns.type)}>`
+        return `(params${allParamsOptional ? '?' : ''}: ${safeName}_Params, meta?: Meta__<any>)${rs} Observable<${comp.typeAsTs(met.returns.type)}>`
     } else {
         return `(meta?: Meta__<any>)${rs} Observable<${comp.typeAsTs(met.returns.type)}>`
     }
