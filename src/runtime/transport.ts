@@ -1,9 +1,10 @@
-import { InjectionToken, Inject } from "@angular/core"
+import { InjectionToken, Inject, Optional } from "@angular/core"
 import { HttpClient, HttpHeaders } from "@angular/common/http"
-import { Observable, race } from "rxjs"
-import { share, takeUntil } from "rxjs/operators"
+import { Observable, race, NEVER } from "rxjs"
+import { share, takeUntil, catchError } from "rxjs/operators"
 
 import { Transaction, RequestMeta, RpcError } from "./transaction"
+import { RpcInterceptor, applyInterceptors } from "./interceptor"
 
 
 export abstract class Transport {
@@ -14,12 +15,15 @@ export abstract class Transport {
     protected pending: Array<Transaction<any>> = []
     protected packingTimeout: any
 
+    public constructor(@Inject(RpcInterceptor) @Optional() protected readonly interceptors: RpcInterceptor[]) {
+
+    }
 
     public call(name: string, params: { [key: string]: any }, meta?: RequestMeta): Observable<any> {
         const trans = new Transaction(this.nextId++, name, params, meta)
         this.transactions[trans.id] = trans
 
-        return new Observable(observer => {
+        const observable = new Observable(observer => {
             let s = trans.progress.subscribe(observer)
 
             if (this.packingTime) {
@@ -32,10 +36,20 @@ export abstract class Transport {
                         clearTimeout(this.packingTimeout)
                         delete this.packingTimeout
                         this._send(toSend)
+                            .pipe(catchError((err: any) => {
+                                observer.error(err)
+                                return NEVER
+                            }))
+                            .subscribe()
                     }, this.packingTime)
                 }
             } else {
                 this._send([trans])
+                    .pipe(catchError((err: any) => {
+                        observer.error(err)
+                        return NEVER
+                    }))
+                    .subscribe()
             }
 
             return () => {
@@ -45,10 +59,12 @@ export abstract class Transport {
                 }
                 s.unsubscribe()
             }
-        }).pipe(share())
+        })
+
+        return applyInterceptors(observable, this.interceptors || []).pipe(share())
     }
 
-    protected abstract _send(trans: Array<Transaction<any>>): void
+    protected abstract _send(trans: Array<Transaction<any>>): Observable<any>
 
     protected abstract _cancel(trans: Transaction<any>): void
 }
@@ -58,9 +74,10 @@ export class HTTPTransport extends Transport {
     public static readonly ENDPOINT = new InjectionToken("HTTPTransport.ENDPOINT")
 
     public constructor(
+        @Inject(RpcInterceptor) @Optional() interceptors: RpcInterceptor[],
         @Inject(HTTPTransport.ENDPOINT) public readonly endpoint: string,
         @Inject(HttpClient) protected readonly http: HttpClient) {
-        super()
+        super(interceptors)
     }
 
     // protected _send(trans: Transaction<any>) {
@@ -77,18 +94,30 @@ export class HTTPTransport extends Transport {
     //         })
     // }
 
-    protected _send(trans: Array<Transaction<any>>): void {
+    protected _send(trans: Array<Transaction<any>>): Observable<any> {
         const data = trans.map(t => this._render(t))
         const headers = new HttpHeaders({
             "Content-Type": "application/json"
         })
 
-        this.http.post(this.endpoint, JSON.stringify(data), { headers, withCredentials: true })
-            .pipe(takeUntil(race(trans.map(t => t.progress))))
-            .subscribe(success => {
-                let body: any[] = Array.isArray(success) ? success : [success]
-                this._handleResponse(body)
-            })
+        return new Observable(observer => {
+            const s = this.http.post(this.endpoint, JSON.stringify(data), { headers, withCredentials: true })
+                .pipe(
+                    takeUntil(race(trans.map(t => t.progress))),
+                    catchError(err => {
+                        observer.error(err)
+                        return NEVER
+                    })
+                ).subscribe(success => {
+                    let body: any[] = Array.isArray(success) ? success : [success]
+                    this._handleResponse(body)
+                    observer.complete()
+                })
+
+            return () => {
+                s.unsubscribe()
+            }
+        })
     }
 
     protected _cancel(trans: Transaction<any>) {
