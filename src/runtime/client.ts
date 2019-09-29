@@ -1,5 +1,6 @@
 import { Inject } from "@angular/core"
-import { map } from "rxjs/operators"
+import { of, throwError } from "rxjs"
+import { map, switchMap } from "rxjs/operators"
 
 import { HTTPTransport, Transport } from "./transport"
 
@@ -37,7 +38,10 @@ export function Method(name: string, options: MethodOptions = {}) {
 
         target[propertyKey] = map_
             ? function (this: Client, params: { [key: string]: any }, meta?: any): any {
-                return this.transport.call(action_, params, meta).pipe(map(map_))
+                return this.transport.call(action_, params, meta)
+                    .pipe(switchMap(function (result: any) {
+                        return result instanceof Error ? throwError(result) : of(map_(result))
+                    }))
             }
             : function (this: Client, params: { [key: string]: any }, meta?: any): any {
                 return this.transport.call(action_, params, meta)
