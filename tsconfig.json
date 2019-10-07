@@ -19,7 +19,7 @@
         "baseUrl": ".",
         "paths": {
             "@anzar/core/*": [
-                "../anzar/core/src/*"
+                "../core/src/*"
             ]
         }
     },
