@@ -208,13 +208,13 @@ class _TypeFactory {
         if (!this._helpers["__newMapping"]) {
             this._helpers["__newMapping"] = [
                 `function __newMapping<T>(factory: (obj: any) => T, obj: any): { [key: string]: T } {`,
-                `    return new function() {`,
-                `        for (const k in obj) {`,
-                `            if (obj.hasOwnProperty(k)) {`,
-                `                this[k] = factory(obj[k])`,
-                `            }`,
+                `    const result: { [key: string]: T } = {}`,
+                `    for (const k in obj) {`,
+                `        if (obj.hasOwnProperty(k)) {`,
+                `            result[k] = factory(obj[k])`,
                 `        }`,
-                `    } as any`,
+                `    }`,
+                `    return result`,
                 `}`
             ].join("\n")
         }
