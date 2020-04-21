@@ -1,4 +1,4 @@
-import { InjectionToken, Inject, Optional } from "@angular/core"
+import { InjectionToken, Inject, Optional, Injectable } from "@angular/core"
 import { HttpClient, HttpHeaders } from "@angular/common/http"
 import { Observable, race, NEVER } from "rxjs"
 import { share, takeUntil, catchError } from "rxjs/operators"
@@ -70,6 +70,7 @@ export abstract class Transport {
 }
 
 
+@Injectable()
 export class HTTPTransport extends Transport {
     public static readonly ENDPOINT = new InjectionToken("HTTPTransport.ENDPOINT")
 

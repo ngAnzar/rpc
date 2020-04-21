@@ -11,7 +11,7 @@ export declare class Compiler {
     protected _deps: string[];
     protected _currentBlock: RenderedBlock;
     constructor(doc: Document);
-    readonly deps: string[];
+    get deps(): string[];
     importType(type: Type): void;
     protected _getUniqueImportName(qname: QName): string;
     typeAsTs(type: Type): string;

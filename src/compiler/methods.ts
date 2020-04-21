@@ -56,7 +56,7 @@ function createMethodsCls(comp: Compiler, name: string, methods: Method[]): Rend
     let rendered = comp.newBlock(new QName(comp.doc.path, "/methods/", name))
     let dataSource = createDataSource(comp, name, methods)
     let requirements: string[] = []
-    let res = `export class ${name} extends HTTPClient__ {\n`
+    let res = `@Injectable()\nexport class ${name} extends HTTPClient__ {\n`
 
     // if (dataSource) {
     //     res += `    public static readonly SOURCE = new InjectionToken<RpcDataSource__<any, ${name}>>("${name}.SOURCE")\n\n`
@@ -107,6 +107,7 @@ export function hasDataSource(methods: Method[]): boolean {
 function createDataSource(comp: Compiler, name: string, methods: Method[]): string | null {
     if (hasDataSource(methods)) {
         return [
+            `@Injectable()`,
             `export class ${name}Source extends RpcDataSource__<any, ${name}> {`,
             `    public constructor(@Inject(${name}) backend: ${name}) {`,
             `        super(backend)`,

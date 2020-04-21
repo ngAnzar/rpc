@@ -135,7 +135,7 @@ export class Compiler {
                 alias = `${alias}_${i++}`
             }
 
-        } while (!ok);
+        } while (!ok)
 
         return alias
     }
@@ -269,7 +269,7 @@ export class Compiler {
         }
 
         let res: string[] = [
-            `import { FactoryProvider, InjectionToken, Inject } from "@angular/core"`,
+            `import { FactoryProvider, InjectionToken, Inject, Injectable } from "@angular/core"`,
             `import { Observable } from "rxjs"`,
             `import { Entity as Entity__, Field as Field__, Method as Method__, HTTPClient as HTTPClient__, RpcDataSource as RpcDataSource__, StaticSource as StaticSource__, Time } from "@anzar/rpc"`
         ]

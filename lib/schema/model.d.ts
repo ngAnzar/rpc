@@ -1,6 +1,6 @@
 import { Registry } from "./registry";
 export declare abstract class Type {
-    readonly uid: string;
+    get uid(): string;
     private _uid;
     resolve(): void;
     protected abstract _resolve(): void;
@@ -55,13 +55,13 @@ export declare class Type_PolymorphId {
     readonly fields: string[];
     readonly values: Array<string | number>;
     constructor(fields: string[], values: Array<string | number>);
-    readonly uid: string;
+    get uid(): string;
 }
 export declare class Type_PolymorphMap {
     readonly id: Type_PolymorphId;
     readonly type: Type_Ref;
     constructor(id: Type_PolymorphId, type: Type_Ref);
-    readonly uid: string;
+    get uid(): string;
 }
 export declare class QName {
     readonly file: string;
@@ -70,9 +70,9 @@ export declare class QName {
     readonly ns: string;
     readonly name: string;
     constructor(file: string, path: string, name: string);
-    readonly fullName: string;
-    readonly uid: string;
-    readonly document: Document;
+    get fullName(): string;
+    get uid(): string;
+    get document(): Document;
 }
 declare const ENT_NAME: unique symbol;
 declare const ENT_DATA: unique symbol;

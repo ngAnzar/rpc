@@ -1,4 +1,4 @@
-import { Inject } from "@angular/core"
+import { Inject, Injectable } from "@angular/core"
 import { of, throwError } from "rxjs"
 import { map, switchMap } from "rxjs/operators"
 
@@ -50,6 +50,7 @@ export function Method(name: string, options: MethodOptions = {}) {
 }
 
 
+@Injectable()
 export class HTTPClient extends Client {
     public constructor(@Inject(HTTPTransport) public readonly transport: Transport) {
         super()
