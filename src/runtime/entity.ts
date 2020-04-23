@@ -1,4 +1,4 @@
-import { Model } from "@anzar/core/data.module"
+import { Model } from "@anzar/core"
 import { Client } from "./client"
 
 

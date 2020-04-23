@@ -1,6 +1,5 @@
 import { Observable, NEVER } from "rxjs"
-import { DataSource, Model, PrimaryKey, Filter, Sorter, Meta } from "@anzar/core/data.module"
-import { NzRange } from "@anzar/core/util"
+import { DataSource, Model, PrimaryKey, Filter, Sorter, Meta, NzRange } from "@anzar/core"
 
 
 export interface Backend {

@@ -1,6 +1,6 @@
 import { Subject } from "rxjs"
 
-import { Meta } from "@anzar/core/data.module"
+import { Meta } from "@anzar/core"
 
 
 export type RequestMeta<T = any> = Meta<T>
