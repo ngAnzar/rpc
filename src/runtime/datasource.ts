@@ -19,22 +19,22 @@ export class RpcDataSource<T extends Model, B extends Backend> extends DataSourc
     }
 
     protected _search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange, m?: Meta<T>): Observable<any[]> {
-        return this.backend.search({ filter: f, order: s, begin: r ? r.begin : null, count: r ? r.length : null }, m)
+        return this.backend.search({ filter: f, order: s, begin: r ? r.begin : null, count: r ? r.length : null }, m as any)
     }
 
     protected _get(id: PrimaryKey, m?: Meta<T>): Observable<T> {
-        return this.backend.get({ id }, m)
+        return this.backend.get({ id }, m as any)
     }
 
     protected _save(model: T, m?: Meta<T>): Observable<T> {
-        return this.backend.save(Model.toObject(model, true), m)
+        return this.backend.save(Model.toObject(model, true), m as any)
     }
 
     protected _remove(id: PrimaryKey, m?: Meta<T>): Observable<boolean> {
-        return this.backend.remove({ id }, m)
+        return this.backend.remove({ id }, m as any)
     }
 
     public getPosition(id: PrimaryKey, m?: Meta<T>): Observable<number> {
-        return this.backend.position({ id }, m)
+        return this.backend.position({ id }, m as any)
     }
 }
