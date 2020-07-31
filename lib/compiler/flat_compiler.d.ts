@@ -9,5 +9,5 @@ export declare class FlatCompiler {
     addCompiler(compiler: Compiler): void;
     emit(outPath: string): void;
     protected orderedBlocks(): RenderedBlock[];
-    protected addToDeps(block: RenderedBlock, res: string[]): void;
+    protected addToDeps(block: RenderedBlock, res: string[], circular?: any[]): void;
 }

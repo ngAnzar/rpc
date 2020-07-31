@@ -12,7 +12,7 @@ export class FlatCompiler {
         `import { FactoryProvider, InjectionToken, Inject, Injectable } from "@angular/core"`,
         `import { Observable } from "rxjs"`,
         `import { Time } from "@anzar/rpc"`,
-        `import { Entity as Entity__, Field as Field__, Method as Method__, HTTPClient as HTTPClient__, RpcDataSource as RpcDataSource__, StaticSource as StaticSource__, RequestMeta as Meta__ } from "@anzar/rpc"`
+        `import { Entity as Entity__, decorateModelClass as initEntity__, Method as Method__, HTTPClient as HTTPClient__, RpcDataSource as RpcDataSource__, StaticSource as StaticSource__, RequestMeta as Meta__ } from "@anzar/rpc"`
     ].join("\n")
 
     public constructor() {
@@ -51,7 +51,12 @@ export class FlatCompiler {
         return deps.map(k => this.blocks[k])
     }
 
-    protected addToDeps(block: RenderedBlock, res: string[]) {
+    protected addToDeps(block: RenderedBlock, res: string[], circular: any[] = []) {
+        if (circular.indexOf(block.qname) !== -1) {
+            return
+        }
+        circular.push(block.qname)
+
         let idx = res.indexOf(block.qname)
         if (idx === -1) {
             idx = res.length
@@ -62,11 +67,11 @@ export class FlatCompiler {
             let didx = res.indexOf(dep)
             if (didx === -1) {
                 res.splice(idx, 0, dep)
-                this.addToDeps(this.blocks[dep], res)
+                this.addToDeps(this.blocks[dep], res, circular)
             } else if (didx > idx) {
                 res.splice(didx, 1)
                 res.splice(idx, 0, dep)
-                this.addToDeps(this.blocks[dep], res)
+                this.addToDeps(this.blocks[dep], res, circular)
             }
         }
     }

@@ -18,8 +18,11 @@ export function createEntityCode(comp: Compiler, ent: Entity): RenderedBlock {
     let res = `export class ${Entity.qname(ent).name} extends Entity__ {\n`
 
     const fields = ent.fields
+    const decorators: string[] = []
     for (const f in fields) {
-        res += createFieldCode(comp, ent, fields[f]) + "\n"
+        const [property, decorator] = createFieldCode(comp, ent, fields[f])
+        decorators.push("    " + decorator)
+        res += `    ${property}\n`
     }
 
     res += `    public static readonly CLASS = new InjectionToken("${Entity.qname(ent).name}Class")\n`
@@ -32,6 +35,10 @@ export function createEntityCode(comp: Compiler, ent: Entity): RenderedBlock {
 
     res += `}\n`
 
+    res += `initEntity__(${Entity.qname(ent).name}, {\n`
+    res += decorators.join(",\n")
+    res += `\n});\n`
+
     if (staticData) {
         res += `(${Entity.qname(ent).name} as any).DATA = new StaticSource__(${Entity.qname(ent).name}, ${JSON.stringify(staticData.items)} as any)\n`
     }
@@ -41,7 +48,7 @@ export function createEntityCode(comp: Compiler, ent: Entity): RenderedBlock {
 }
 
 
-function createFieldCode(comp: Compiler, ent: Entity, field: EntityField, type?: Type): string {
+function createFieldCode(comp: Compiler, ent: Entity, field: EntityField, type?: Type): [string, string] {
     type = type || field.type
 
     if (type instanceof Type_Ref) {
@@ -51,17 +58,48 @@ function createFieldCode(comp: Compiler, ent: Entity, field: EntityField, type?:
     }
 
     let tsType = comp.typeAsTs(type)
+    let map = comp.typeAsFactory(type)
+    let opts: string[] = []
+
+    if (map) {
+        opts.push(`map: ${map}`)
+    }
+
+    if (ent.primaryKey.indexOf(field.name) !== -1) {
+        opts.push(`primary: true`)
+    }
+
+    return [
+        `public ${field.name}: ${tsType}`,
+        `"${field.name}": { ${opts.join(', ')} }`
+    ]
+}
+
+
+function __createFieldCode(comp: Compiler, ent: Entity, field: EntityField, type?: Type): string {
+    type = type || field.type
+
+    if (type instanceof Type_Ref) {
+        if (type.referenced instanceof Type) {
+            return __createFieldCode(comp, ent, field, type.referenced)
+        }
+    }
+
+    let tsType = comp.typeAsTs(type)
     let ents = getEntitiesFromType(type).map(v => comp.getEntityName(v))
     let tArray = ents.length ? `[${ents.join(", ")}]` : null
     let map = comp.typeAsFactory(type)
     let opts: string[] = []
 
-    if (tArray && map) {
-        opts.push(`map: ${map}`)
-        opts.push(`type: ${tArray}`)
-    } else if (tArray) {
-        opts.push(`type: ${tArray}`)
-    } else if (map) {
+    // if (tArray && map) {
+    //     opts.push(`map: ${map}`)
+    //     opts.push(`type: ${tArray}`)
+    // } else if (tArray) {
+    //     opts.push(`type: ${tArray}`)
+    // } else if (map) {
+    //     opts.push(`map: ${map}`)
+    // }
+    if (map) {
         opts.push(`map: ${map}`)
     }
 
