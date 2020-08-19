@@ -6,26 +6,20 @@ const { ArgumentParser } = require("argparse")
 const { compile } = require("./compiler")
 
 const parser = new ArgumentParser({
-    addHelp: true
+    add_help: true
 })
 
-parser.addArgument(
-    ["-o", "--outPath"],
-    {
-        help: "output path"
-    }
-)
+parser.add_argument("-o", "--outPath", {
+    help: "output path"
+})
 
-parser.addArgument(
-    ["-i", "--input"],
-    {
-        nargs: "*",
-        help: "input files"
-    }
-)
+parser.add_argument("-i", "--input", {
+    nargs: "*",
+    help: "input files"
+})
 
 
-var args = parser.parseArgs();
+var args = parser.parse_args()
 if (!args.input || args.input.length === 0) {
     console.error("Missing input file")
     process.exit(1)
