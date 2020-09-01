@@ -1,13 +1,16 @@
-import { Observable } from "rxjs";
+import { Observable } from "rxjs"
+import { Transaction } from "./transaction"
 
 export abstract class RpcInterceptor<T = any> {
-    public abstract intercept(source: Observable<T>): Observable<T>
+    public abstract intercept(transaction: Transaction<T>, source: Observable<T>): Observable<T>
+
+    public onRequest?: (transactions: Array<Transaction<T>>) => void
 }
 
 
-export function applyInterceptors<T>(source: Observable<T>, interceptors: Array<RpcInterceptor<T>>): Observable<T> {
+export function applyInterceptors<T>(transaction: Transaction<T>, source: Observable<T>, interceptors: Array<RpcInterceptor<T>>): Observable<T> {
     for (const i of interceptors) {
-        source = i.intercept(source)
+        source = i.intercept(transaction, source)
     }
     return source
 }

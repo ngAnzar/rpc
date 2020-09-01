@@ -35,7 +35,7 @@ export abstract class Transport {
                         this.pending.length = 0
                         clearTimeout(this.packingTimeout)
                         delete this.packingTimeout
-                        this._send(toSend)
+                        this.__send(toSend)
                             .pipe(catchError((err: any) => {
                                 observer.error(err)
                                 return NEVER
@@ -44,7 +44,7 @@ export abstract class Transport {
                     }, this.packingTime)
                 }
             } else {
-                this._send([trans])
+                this.__send([trans])
                     .pipe(catchError((err: any) => {
                         observer.error(err)
                         return NEVER
@@ -61,7 +61,19 @@ export abstract class Transport {
             }
         })
 
-        return applyInterceptors(observable, this.interceptors || []).pipe(share())
+        return applyInterceptors(trans, observable, this.interceptors || []).pipe(share())
+    }
+
+    private __send(trans: Array<Transaction<any>>): Observable<any> {
+        if (this.interceptors) {
+            for (const i of this.interceptors) {
+                if (i.onRequest) {
+                    i.onRequest(trans)
+                }
+            }
+        }
+
+        return this._send(trans)
     }
 
     protected abstract _send(trans: Array<Transaction<any>>): Observable<any>
