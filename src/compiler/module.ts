@@ -1,6 +1,6 @@
 import fs = require("fs")
 import path = require("path")
-import { Entity, Document } from "../schema";
+import { Entity, Document } from "../schema"
 import { groupMethods, hasDataSource } from "./methods"
 
 
@@ -88,6 +88,7 @@ function getDocumentExports(doc: Document): string[] {
 
 
 function getModuleName(outPath: string): string {
-    let name = path.basename(outPath).split(".")[0]
-    return `${name.charAt(0).toUpperCase()}${name.slice(1)}Api`
+    const parts = path.basename(outPath).split(".")
+    parts.pop()
+    return parts.map(v => `${v.charAt(0).toUpperCase()}${v.slice(1)}`).join('')
 }
