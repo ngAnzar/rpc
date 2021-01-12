@@ -62,11 +62,12 @@ class _TypeFactory {
                 case "null": return this._anyFactory(comp)
                 case "date":
                 case "datetime":
-                    if (this._dateFactory) {
-                        return this._dateFactory
-                    } else {
-                        return this._dateFactory = this._entityFactory(comp, "Date")
-                    }
+                    return "parseDate"
+                // if (this._dateFactory) {
+                //     return this._dateFactory
+                // } else {
+                //     return this._dateFactory = this._entityFactory(comp, "Date")
+                // }
                 case "time":
                     if (this._timeFactory) {
                         return this._timeFactory
