@@ -1,7 +1,7 @@
 import { Registry } from "./registry";
 export declare abstract class Type {
     get uid(): string;
-    private _uid;
+    private _uid?;
     resolve(): void;
     protected abstract _resolve(): void;
     protected abstract _createUid(): string;

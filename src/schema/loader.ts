@@ -1,13 +1,13 @@
 import * as path from "path"
 import * as fs from "fs-extra"
-import * as ajv from "ajv"
+import Ajv, { ErrorObject } from "ajv"
 import * as YAML from "yaml"
 
 
 export const schema = require("../../definition.schema.json")
-const ajvInstance = ajv({
+const ajvInstance = new Ajv({
     allErrors: true,
-    jsonPointers: true
+    allowUnionTypes: true,
 })
 export const validator = ajvInstance.compile(schema)
 
@@ -36,7 +36,7 @@ export function loadDefinition(jsonPath: string) {
 }
 
 
-function formatError(errors: ajv.ErrorObject[], filePath: string) {
+function formatError(errors: ErrorObject[], filePath: string) {
     let messages: string[] = []
 
     for (const error of errors) {

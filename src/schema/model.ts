@@ -10,7 +10,7 @@ export abstract class Type {
     public get uid(): string {
         return this._uid ? this._uid : (this._uid = crypto.createHash("md5").update(this._createUid()).digest("hex"))
     }
-    private _uid: string
+    private _uid?: string
 
     public resolve() {
         delete this._uid
@@ -421,7 +421,7 @@ export class Document {
                         throw new Error("Incorrect number of id values in polymorphic mapping definition")
                     }
                     const id = new Type_PolymorphId(idFields, idValues)
-                    mapping.push(new Type_PolymorphMap(id, this._type({ $ref: item.$ref }) as Type_Ref));
+                    mapping.push(new Type_PolymorphMap(id, this._type({ $ref: item.$ref }) as Type_Ref))
                 }
 
                 return new Type_Polymorph(mapping)
