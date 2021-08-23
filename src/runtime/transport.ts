@@ -156,8 +156,10 @@ export class HTTPTransport extends Transport {
     protected _render(trans: Transaction<any>) {
         let res: any = {
             id: trans.id,
-            method: trans.method,
-            params: trans.params
+            method: trans.method
+        }
+        if (trans.params) {
+            res.params = trans.params
         }
         if (trans.meta) {
             res.meta = trans.meta

@@ -64,14 +64,22 @@ function createMethodsCls(comp: Compiler, name: string, methods: Method[]): Rend
 
     for (const met of methods) {
         let map = comp.typeAsFactory(met.returns.type)
-        let options = ""
+        let options = `{ name: ${JSON.stringify(met.name.fullName)}`
         if (map) {
-            options = `, { map: ${map} }`
+            options += `, map: ${map}`
         }
 
+
+        let methType = getMethodAsType(comp, requirements, met)
+        if (methType.startsWith("(params")) {
+            options += `, hasParams: true`
+        }
+
+        options += ` }`
+
         res += [
-            `    @Method__(${JSON.stringify(met.name.fullName)}${options})`,
-            `    public readonly ${met.name.name}: ${getMethodAsType(comp, requirements, met)}`
+            `    @Method__(${options})`,
+            `    public readonly ${met.name.name}: ${methType}`
         ].join("\n") + "\n"
     }
 

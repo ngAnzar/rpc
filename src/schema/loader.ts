@@ -42,7 +42,7 @@ function formatError(errors: ErrorObject[], filePath: string) {
     for (const error of errors) {
         let params: string = error.params ? " " + JSON.stringify(error.params) : ""
 
-        messages.push(`Error in #${error.dataPath} '${error.message}'${params}. Schema '${error.schemaPath}'`)
+        messages.push(`Error in #${error.instancePath} '${error.message}'${params}. Schema '${error.schemaPath}'`)
     }
 
     return messages.join("\n")

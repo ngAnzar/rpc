@@ -11,18 +11,21 @@ export abstract class Client {
 
 
 export interface MethodOptions {
-    map?: (obj: any) => any
+    name: string
+    map?: (obj: any) => any,
+    hasParams?: boolean
 }
 
 
-export function Method(name: string, options: MethodOptions = {}) {
+export function Method(options: MethodOptions) {
     return (target: any, propertyKey: string, descriptor?: PropertyDescriptor) => {
         const type = Reflect.getMetadata("design:type", target, propertyKey)
         if (type !== Function) {
             throw new Error("RpcMethod must be function type")
         }
 
-        const action_ = name
+        const action_ = options.name
+        const hasParams = options.hasParams
         const map_ = options.map
         if (map_ && typeof map_ !== "function") {
             throw new Error("'map' option must be a function")
@@ -38,13 +41,13 @@ export function Method(name: string, options: MethodOptions = {}) {
 
         target[propertyKey] = map_
             ? function (this: Client, params: { [key: string]: any }, meta?: any): any {
-                return this.transport.call(action_, params, meta)
+                return (hasParams ? this.transport.call(action_, params, meta) : this.transport.call(action_, null, params))
                     .pipe(switchMap(function (result: any) {
-                        return result instanceof Error ? throwError(result) : of(map_(result))
+                        return result instanceof Error ? throwError(() => result) : of(map_(result))
                     }))
             }
             : function (this: Client, params: { [key: string]: any }, meta?: any): any {
-                return this.transport.call(action_, params, meta)
+                return (hasParams ? this.transport.call(action_, params, meta) : this.transport.call(action_, null, params))
             }
     }
 }
