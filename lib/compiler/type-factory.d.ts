@@ -17,12 +17,8 @@ declare class _TypeFactory {
     emit(filePath: string): void;
     renderBody(): string;
     protected _create(comp: Compiler, type: Type): string;
-    protected _addFactory(comp: Compiler, type: Type, ...content: string[]): string;
-    protected _asFunction(comp: Compiler, type: Type, content: string[]): {
-        name: string;
-        code: string;
-    };
     protected _renderImports(selfPath: string): string;
+    protected _nativeFactory(comp: Compiler, callable: string): string;
     protected _anyFactory(comp: Compiler): string;
     protected _entityFactory(comp: Compiler, name: string): string;
     protected _listFactory(comp: Compiler, itemType: Type): string;
@@ -30,6 +26,9 @@ declare class _TypeFactory {
     protected _tupleFactory(comp: Compiler, itemTypes: Type[]): string;
     protected _polymorphicFactory(comp: Compiler, map: Type_PolymorphMap[]): string;
     protected _optionalFactory(comp: Compiler, itemType: Type): string;
+    protected _renderFactories(factories: {
+        [key: string]: string;
+    }): string;
 }
 export declare const TypeFactory: _TypeFactory;
 export {};

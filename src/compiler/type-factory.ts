@@ -32,7 +32,7 @@ class _TypeFactory {
         let content =
             Object.values(this._helpers).join("\n")
             + "\n\n\n"
-            + Object.values(this._factories).join("\n")
+            + this._renderFactories(this._factories)
             + "\n\n\n"
             + "// XXX: Avoid recursive imports\n"
             + this._renderImports(filePath)
@@ -43,7 +43,7 @@ class _TypeFactory {
     public renderBody() {
         return Object.values(this._helpers).join("\n")
             + "\n\n\n"
-            + Object.values(this._factories).join("\n")
+            + this._renderFactories(this._factories)
             + "\n\n\n"
     }
 
@@ -54,20 +54,14 @@ class _TypeFactory {
             return this._mapFactory(comp, type.itemType)
         } else if (type instanceof Type_Native) {
             switch (type.name) {
-                case "string": return "String"
-                case "integer": return "Number"
-                case "number": return "Number"
-                case "boolean": return "Boolean"
+                case "string": return this._nativeFactory(comp, "String")
+                case "integer": return this._nativeFactory(comp, "Number")
+                case "number": return this._nativeFactory(comp, "Number")
+                case "boolean": return this._nativeFactory(comp, "Boolean")
                 case "any": return this._anyFactory(comp)
                 case "null": return this._anyFactory(comp)
-                case "date":
-                case "datetime":
-                    return "parseDate"
-                // if (this._dateFactory) {
-                //     return this._dateFactory
-                // } else {
-                //     return this._dateFactory = this._entityFactory(comp, "Date")
-                // }
+                case "date": return this._nativeFactory(comp, "parseDate")
+                case "datetime": return this._nativeFactory(comp, "parseDate")
                 case "time":
                     if (this._timeFactory) {
                         return this._timeFactory
@@ -97,21 +91,6 @@ class _TypeFactory {
         }
         console.log(type)
         throw new Error("Unhandled type")
-    }
-
-    protected _addFactory(comp: Compiler, type: Type, ...content: string[]): string {
-        let fn = this._asFunction(comp, type, content)
-        this._factories[fn.name] = fn.code
-        return fn.name
-    }
-
-    protected _asFunction(comp: Compiler, type: Type, content: string[]): { name: string, code: string } {
-        let tsType = comp.typeAsTs(type)
-        let name = this.name + (Object.values(this._factories).length + 1)
-        return {
-            name,
-            code: `export function ${name}(obj: any): ${tsType} {\n${content.join("\n")}\n}`
-        }
     }
 
     protected _renderImports(selfPath: string) {
@@ -145,12 +124,19 @@ class _TypeFactory {
         return res
     }
 
+    protected _nativeFactory(comp: Compiler, callable: string): string {
+        const name = `${this.name}${callable} `
+        if (!this._helpers[name]) {
+            this._helpers[name] = `const ${name} = ${callable}`
+        }
+        return name
+    }
 
     protected _anyFactory(comp: Compiler): string {
         const name = `${this.name}any`
         if (!this._helpers[name]) {
             this._helpers[name] = [
-                `export function ${name}(value: any): any {`,
+                `function ${name}(value: any): any {`,
                 `    return value`,
                 `}`
             ].join("\n")
@@ -173,7 +159,7 @@ class _TypeFactory {
         }
 
         let facName = this.name + (Object.values(this._factories).length + 1)
-        this._factories[facName] = `const ${facName} = (obj: any) => __newEntity(${name}, obj)`
+        this._factories[facName] = `__newEntity(${name}, obj)`
         return facName
     }
 
@@ -196,7 +182,7 @@ class _TypeFactory {
 
         let itemFactory = this.get(comp, itemType)
         let facName = this.name + (Object.values(this._factories).length + 1)
-        this._factories[facName] = `const ${facName} = (obj: any) => __newList(${itemFactory}, obj)`
+        this._factories[facName] = `__newList(${itemFactory}, obj)`
         return facName
     }
 
@@ -222,7 +208,7 @@ class _TypeFactory {
 
         let itemFactory = this.get(comp, itemType)
         let facName = this.name + (Object.values(this._factories).length + 1)
-        this._factories[facName] = `const ${facName} = (obj: any) => __newMapping(${itemFactory}, obj)`
+        this._factories[facName] = `__newMapping(${itemFactory}, obj)`
         return facName
     }
 
@@ -230,24 +216,22 @@ class _TypeFactory {
     protected _tupleFactory(comp: Compiler, itemTypes: Type[]): string {
         if (!this._helpers["__newTuple"]) {
             this._helpers["__newTuple"] = [
-                `function __newTuple(...factories: any[]): any[] {`,
-                `    const length = arguments.length - 1`,
-                `    const obj = arguments[length]`,
-                `    if (obj == null) return null`,
-                `    if (!Array.isArray(obj)) { throw new Error('Value must be array') }`,
+                `type __tupleReturn<T extends any[]> = { [P in keyof T]: T[P] extends (...args: any) => any ? ReturnType<T[P]> : T[P] }`,
+                `function __newTuple<T extends any[]>(obj: any[], ...factories: T): __tupleReturn<T> {`,
+                `    if (!Array.isArray(obj)) { throw new Error('Tuple value must be array') }`,
+                `    const length = factories.length`,
                 `    const result = new Array(length)`,
-                `    let i = 0`,
-                `    while (i < length) {`,
-                `        result[i] = arguments[i](obj[i++])`,
+                `    for (let i = 0; i < length; i++) {`,
+                `        result[i] = factories[i](obj[i])`,
                 `    }`,
-                `    return result`,
+                `    return result as any`,
                 `}`
             ].join("\n")
         }
 
         let factories = itemTypes.map(v => this.get(comp, v))
         let facName = this.name + (Object.values(this._factories).length + 1)
-        this._factories[facName] = `const ${facName} = (obj: any) => __newTuple(${factories.join(", ")}, obj)`
+        this._factories[facName] = `__newTuple(obj, ${factories.join(", ")})`
         return facName
     }
 
@@ -263,11 +247,11 @@ class _TypeFactory {
         }
 
         let mapName = this.name + (Object.values(this._factories).length + 1)
-        this._factories[mapName] = `const ${mapName} = {\n    ` + factoryMap.join(",\n    ") + "\n}"
+        this._helpers[mapName] = `const ${mapName} = {\n    ` + factoryMap.join(",\n    ") + "\n}"
 
         if (useSingleField) {
             let facName = this.name + (Object.values(this._factories).length + 1)
-            this._factories[facName] = `const ${facName} = (obj: any) => (${mapName} as any)[obj[${JSON.stringify(useSingleField)}]](obj)`
+            this._factories[facName] = `(${mapName} as any)[obj[${JSON.stringify(useSingleField)}]](obj)`
             return facName
         } else {
             throw new Error("TODO: multi field polymorphic mapping")
@@ -277,8 +261,16 @@ class _TypeFactory {
     protected _optionalFactory(comp: Compiler, itemType: Type): string {
         let itemFactory = this.get(comp, itemType)
         let facName = this.name + (Object.values(this._factories).length + 1)
-        this._factories[facName] = `const ${facName} = (obj: any) => obj == null ? null : ${itemFactory}(obj)`
+        this._factories[facName] = `obj == null ? null : ${itemFactory}(obj)`
         return facName
+    }
+
+    protected _renderFactories(factories: { [key: string]: string }): string {
+        return Object.keys(factories)
+            .map(key => {
+                return `function ${key}(obj: any) { return ${factories[key]} }`
+            })
+            .join("\n")
     }
 }
 
