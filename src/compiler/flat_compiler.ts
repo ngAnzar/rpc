@@ -39,6 +39,7 @@ export class FlatCompiler {
             this.commonImports + "\n\n" +
             renderBlockComment("FACTORIES") +
             TypeFactory.renderBody() +
+            renderBlockComment("ENTITIES") +
             this.orderedBlocks().map(b => b.content).join("\n\n"))
     }
 
