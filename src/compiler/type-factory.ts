@@ -11,7 +11,7 @@ const CACHE: { [key: string]: string } = {}
 class _TypeFactory {
     public readonly name: string = "anzar_rpc_factory_"
 
-    protected _factories: { [key: string]: string } = {}
+    protected _factories: { [key: string]: string | string[] } = {}
     protected _references: { [key: string]: Entity } = {}
     protected _helpers: { [key: string]: string } = {}
     protected _dateFactory: string
@@ -246,12 +246,14 @@ class _TypeFactory {
             factoryMap.push(`${JSON.stringify(String(pmap.id.values.join("@")))}: ${this.get(comp, pmap.type)}`)
         }
 
-        let mapName = this.name + (Object.values(this._factories).length + 1)
-        this._helpers[mapName] = `const ${mapName} = {\n    ` + factoryMap.join(",\n    ") + "\n}"
+        let facName = this.name + (Object.values(this._factories).length + 1)
+        let mapName = `${facName}_map`
 
         if (useSingleField) {
-            let facName = this.name + (Object.values(this._factories).length + 1)
-            this._factories[facName] = `(${mapName} as any)[obj[${JSON.stringify(useSingleField)}]](obj)`
+            this._factories[facName] = [
+                `const ${mapName} = {\n    ${factoryMap.join(",\n    ")}\n}`,
+                `${mapName}[obj[${JSON.stringify(useSingleField)}] as keyof typeof ${mapName}](obj)`
+            ]
             return facName
         } else {
             throw new Error("TODO: multi field polymorphic mapping")
@@ -265,10 +267,20 @@ class _TypeFactory {
         return facName
     }
 
-    protected _renderFactories(factories: { [key: string]: string }): string {
+    protected _renderFactories(factories: { [key: string]: string | string[] }): string {
         return Object.keys(factories)
             .map(key => {
-                return `function ${key}(obj: any) { return ${factories[key]} }`
+                let fac = factories[key]
+
+                if (Array.isArray(fac)) {
+                    let result = fac.slice()
+                    let fn = `function ${key}(obj: any) { return ${result.pop()} }`
+                    result.push(fn)
+                    return result.join("\n")
+                } else {
+                    return `function ${key}(obj: any) { return ${fac} }`
+                }
+
             })
             .join("\n")
     }

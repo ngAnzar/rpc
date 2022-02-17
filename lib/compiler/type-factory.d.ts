@@ -3,7 +3,7 @@ import { Compiler } from "./compiler";
 declare class _TypeFactory {
     readonly name: string;
     protected _factories: {
-        [key: string]: string;
+        [key: string]: string | string[];
     };
     protected _references: {
         [key: string]: Entity;
@@ -27,7 +27,7 @@ declare class _TypeFactory {
     protected _polymorphicFactory(comp: Compiler, map: Type_PolymorphMap[]): string;
     protected _optionalFactory(comp: Compiler, itemType: Type): string;
     protected _renderFactories(factories: {
-        [key: string]: string;
+        [key: string]: string | string[];
     }): string;
 }
 export declare const TypeFactory: _TypeFactory;
