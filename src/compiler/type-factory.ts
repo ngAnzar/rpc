@@ -250,9 +250,10 @@ class _TypeFactory {
         let mapName = `${facName}_map`
 
         if (useSingleField) {
+            const fb = `obj[${JSON.stringify(useSingleField)}]`
             this._factories[facName] = [
                 `const ${mapName} = {\n    ${factoryMap.join(",\n    ")}\n}`,
-                `${mapName}[obj[${JSON.stringify(useSingleField)}] as keyof typeof ${mapName}](obj)`
+                `${mapName}[(${fb}.value || ${fb}) as keyof typeof ${mapName}](obj)`
             ]
             return facName
         } else {
