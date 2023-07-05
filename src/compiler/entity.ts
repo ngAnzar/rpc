@@ -65,7 +65,7 @@ function createFieldCode(comp: Compiler, ent: Entity, field: EntityField, type?:
         opts.push(`map: ${map}`)
     }
 
-    if (ent.primaryKey.indexOf(field.name) !== -1) {
+    if (ent.primaryKey && ent.primaryKey.indexOf(field.name) !== -1) {
         opts.push(`primary: true`)
     }
 
