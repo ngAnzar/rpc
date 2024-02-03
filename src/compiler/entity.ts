@@ -25,8 +25,11 @@ export function createEntityCode(comp: Compiler, ent: Entity): RenderedBlock {
         res += `    ${property}\n`
     }
 
-    res += `    public static readonly CLASS = new InjectionToken("${Entity.qname(ent).name}Class")\n`
-    res += `    public static readonly PROVIDER: FactoryProvider = { provide: ${Entity.qname(ent).name}.CLASS, useFactory: ${Entity.qname(ent).name}.factory, deps: [HTTPClient__] }\n`
+    // res += `    public static readonly CLASS = new InjectionToken("${Entity.qname(ent).name}Class")\n`
+    // res += `    public static readonly PROVIDER: FactoryProvider = { provide: ${Entity.qname(ent).name}.CLASS, useFactory: ${Entity.qname(ent).name}.factory, deps: [HTTPClient__] }\n`
+    if (ent.polymorphId) {
+        res += `    public static readonly POLYMORPH_ID = ${JSON.stringify(ent.polymorphId)}\n`
+    }
 
     let staticData = Entity.data(ent)
     if (staticData) {

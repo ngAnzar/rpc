@@ -8,11 +8,14 @@ import { groupMethods, hasDataSource } from "./methods"
 
 
 export function createModule(outPath: string, documents: Document[], deps: string[], generatedModule: string) {
-    fs.writeFileSync(outPath, createModuleCode(outPath, documents, deps, generatedModule))
+    const code = createModuleCode(outPath, documents, deps, generatedModule)
+    if (code) {
+        fs.writeFileSync(outPath, code)
+    }
 }
 
 
-function createModuleCode(outPath: string, documents: Document[], deps: string[], generatedModule: string): string {
+function createModuleCode(outPath: string, documents: Document[], deps: string[], generatedModule: string): string | null {
     let imports = [
         `import { NgModule } from "@angular/core"`
     ]
@@ -57,18 +60,25 @@ function createModuleCode(outPath: string, documents: Document[], deps: string[]
 
         let pEnt = Object.values(doc.entities).map(v => Entity.qname(v).tln)
         provides = provides
-            .concat(Object.values(doc.entities).map(v => `${Entity.qname(v).fullName}.PROVIDER`))
+            // .concat(Object.values(doc.entities).map(v => `${Entity.qname(v).fullName}.PROVIDER`))
             .concat(Object.keys(methods).filter(v => pEnt.indexOf(v) === -1))
     }
 
     exports_ = exports_.filter((v, i, a) => a.indexOf(v) === i)
     provides = provides.filter((v, i, a) => a.indexOf(v) === i)
 
+    if (provides.length === 0 && exports_.length === 0) {
+        return null
+    }
+
     let moduleName = getModuleName(outPath)
     let lItemSep = "\n        "
     let mImports = refdModules.length ? `    imports: [${lItemSep}${refdModules.join(`,${lItemSep}`)}\n    ],\n` : ""
+    let mProvides = provides.length > 0
+        ? `    providers: [${lItemSep}${provides.join(`,${lItemSep}`)}\n    ],\n`
+        : ""
     let module = [
-        `@NgModule({\n${mImports}    providers: [${lItemSep}${provides.join(`,${lItemSep}`)}\n    ]\n})`,
+        `@NgModule({\n${mImports}${mProvides}})`,
         `export class ${moduleName} {}`
     ]
 

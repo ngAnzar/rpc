@@ -236,7 +236,8 @@ export class Entity {
         name: QName,
         public readonly fields: EntityFields,
         public readonly polymorph: Type_Polymorph,
-        public readonly primaryKey: string[]) {
+        public readonly primaryKey: string[],
+        public readonly polymorphId?: string) {
         this[ENT_NAME] = name
     }
 }
@@ -354,7 +355,7 @@ export class Document {
                 poly = this._type({ polymorph: entity.polymorph })
             }
 
-            this.entities[k] = new Entity(name, fields, poly, entity.primaryKey)
+            this.entities[k] = new Entity(name, fields, poly, entity.primaryKey, entity.polymorphId)
         }
     }
 

@@ -80,11 +80,12 @@ export declare class Entity {
     readonly fields: EntityFields;
     readonly polymorph: Type_Polymorph;
     readonly primaryKey: string[];
+    readonly polymorphId?: string | undefined;
     static qname(ent: Entity): QName;
     static data(ent: Entity): StaticData | null;
     protected [ENT_NAME]: QName;
     protected [ENT_DATA]: StaticData;
-    constructor(name: QName, fields: EntityFields, polymorph: Type_Polymorph, primaryKey: string[]);
+    constructor(name: QName, fields: EntityFields, polymorph: Type_Polymorph, primaryKey: string[], polymorphId?: string | undefined);
 }
 export declare class EntityField {
     name: string;
