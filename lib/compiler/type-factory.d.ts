@@ -13,10 +13,10 @@ declare class _TypeFactory {
     };
     protected _dateFactory: string;
     protected _timeFactory: string;
-    get(comp: Compiler, type: Type): string;
+    get(comp: Compiler, type: Type, skipPolyId?: string | null): string;
     emit(filePath: string): void;
     renderBody(): string;
-    protected _create(comp: Compiler, type: Type): string;
+    protected _create(comp: Compiler, type: Type, skipPolyId?: string | null): string;
     protected _renderImports(selfPath: string): string;
     protected _nativeFactory(comp: Compiler, callable: string): string;
     protected _anyFactory(comp: Compiler): string;

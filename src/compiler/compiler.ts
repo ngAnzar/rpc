@@ -140,7 +140,7 @@ export class Compiler {
         return alias
     }
 
-    public typeAsTs(type: Type): string {
+    public typeAsTs(type: Type, skipPoly = false): string {
         this.importType(type)
 
         if (type instanceof Type_List) {
@@ -162,7 +162,7 @@ export class Compiler {
             throw new Error("Unhandled native type")
         } else if (type instanceof Type_Ref) {
             if (type.referenced instanceof Entity) {
-                if (type.referenced.polymorph) {
+                if (skipPoly === false && type.referenced.polymorph) {
                     return this.typeAsTs(type.referenced.polymorph)
                 } else {
                     return this.getEntityName(type.referenced)
@@ -178,7 +178,7 @@ export class Compiler {
                 v.id.fields.forEach((field, i) => {
                     id[field] = v.id.values[i]
                 })
-                return `(${this.typeAsTs(v.type)} & ${JSON.stringify(id)})`
+                return `(${this.typeAsTs(v.type, true)} & ${JSON.stringify(id)})`
             }).join(" | ")
         } else if (type instanceof Type_Optional) {
             return `${this.typeAsTs(type.itemType)} | null`

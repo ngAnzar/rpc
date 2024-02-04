@@ -17,10 +17,10 @@ class _TypeFactory {
     protected _dateFactory: string
     protected _timeFactory: string
 
-    public get(comp: Compiler, type: Type): string {
+    public get(comp: Compiler, type: Type, skipPolyId: string | null = null): string {
         let factory = CACHE[type.uid]
         if (!factory) {
-            factory = this._create(comp, type)
+            factory = this._create(comp, type, skipPolyId)
             CACHE[type.uid] = factory
         }
         return factory
@@ -47,7 +47,7 @@ class _TypeFactory {
             + "\n\n\n"
     }
 
-    protected _create(comp: Compiler, type: Type): string {
+    protected _create(comp: Compiler, type: Type, skipPolyId: string | null = null): string {
         if (type instanceof Type_List) {
             return this._listFactory(comp, type.itemType)
         } else if (type instanceof Type_Mapping) {
@@ -72,7 +72,7 @@ class _TypeFactory {
             throw new Error("Unhandled native type: " + type.name)
         } else if (type instanceof Type_Ref) {
             if (type.referenced instanceof Entity) {
-                if (type.referenced.polymorph) {
+                if ((skipPolyId === null || skipPolyId != type.referenced.polymorphId) && type.referenced.polymorph) {
                     return this._polymorphicFactory(comp, type.referenced.polymorph.mapping)
                 } else {
                     this._references[Entity.qname(type.referenced).uid] = type.referenced
@@ -243,7 +243,9 @@ class _TypeFactory {
             if (!useSingleField || pmap.id.fields[0] !== useSingleField) {
                 useSingleField = null
             }
-            factoryMap.push(`${JSON.stringify(String(pmap.id.values.join("@")))}: ${this.get(comp, pmap.type)}`)
+            const refd = pmap.type.referenced
+            let skipPolyId = refd instanceof Entity ? refd.polymorphId : null
+            factoryMap.push(`${JSON.stringify(String(pmap.id.values.join("@")))}: ${this.get(comp, pmap.type, skipPolyId)}`)
         }
 
         let facName = this.name + (Object.values(this._factories).length + 1)

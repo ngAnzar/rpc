@@ -14,7 +14,7 @@ export declare class Compiler {
     get deps(): string[];
     importType(type: Type): void;
     protected _getUniqueImportName(qname: QName): string;
-    typeAsTs(type: Type): string;
+    typeAsTs(type: Type, skipPoly?: boolean): string;
     typeAsFactory(type: Type): string;
     getEntityName(ent: Entity): string;
     protected _getQNameLocalName(qname: QName): string;
